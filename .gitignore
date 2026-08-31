@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+venv/
+
+# macOS
+.DS_Store
+
+# Build/derived artifacts — regenerate with pipeline/build_loanword_index.py
+# and pipeline/semantic_branch.py
+pipeline/cache/
+
+# External datasets — large and/or third-party licensed; see README.md
+# "Data sources" for exact download links and where each file goes.
+data/CEFR-J/
+data/fasttext/
+data/edict/
+data/wordnet_ewn/
+
+# Ad-hoc experiment output — not part of the reproducible pipeline
+experiments/

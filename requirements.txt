@@ -1,0 +1,15 @@
+# Core — no ML, works in any lightweight Python 3.9+ environment.
+# Needed by: cefr_lookup, gairaigo, phonetic_swaps, levenshtein_search,
+# spelling_branch, build_loanword_index, step1_load_data.
+lxml>=4.9
+PyYAML>=6.0
+python-Levenshtein>=0.21
+pykakasi>=2.2
+
+# Semantic branch only — needs network access on first run (downloads
+# microsoft/deberta-v3-large) and real RAM/disk, so run this from a normal
+# desktop/laptop Python environment, not a constrained sandbox.
+torch>=2.0
+transformers>=4.30
+sentencepiece>=0.1.99
+numpy>=1.24

@@ -1,0 +1,599 @@
+bank_id,word,level,pos,sentence
+1,ask,A1,verb,Did you ask the price?
+2,ask,A1,verb,Can I ask a question?
+3,ask,A1,verb,I'm not asking for money.
+4,ask,A1,verb,"Well, she asked for it!"
+5,ask,A1,verb,Eric asked me to marry him.
+6,ask,A1,verb,I asked to see the manager.
+7,ask,A1,verb,The police asked him several questions.
+8,ask,A1,verb,'Where are you going?' she asked.
+9,ask,A1,verb,Why don't you ask his advice?
+10,ask,A1,verb,"If you want anything, just ask."
+11,ask,A1,verb,We must ask the neighbours round.
+12,ask,A1,verb,You're asking too much of him.
+13,ask,A1,verb,I was asked if I could drive.
+14,ask,A1,verb,I wanted to ask him a question.
+15,ask,A1,verb,Don't be afraid to ask for help.
+556,ask,A1,verb,I asked my parents nicely for a new book
+16,brush,A1,verb,The leaves brushed her cheek.
+17,brush,A1,verb,Brush the pastry with beaten egg.
+18,brush,A1,verb,I brushed the dirt off my jacket.
+19,brush,A1,verb,I brushed the crumbs off the table.
+20,brush,A1,verb,A tiled floor is easy to brush clean.
+21,brush,A1,verb,You can brush your hair.
+22,brush,A1,verb,I clean the shoes with a brush
+23,brush,A1,verb,Painters need a big brush.
+24,brush,A1,verb,Mom paints with a small brush.
+25,brush,A1,verb,Take a brush and clean shoes.
+197,brush,A1,verb,I like my new brush
+198,brush,A1,verb,It is difficult to paint with an old brush
+199,brush,A1,verb,I like brushing the hair of my sister
+200,brush,A1,verb,To brush your teeth you need a toothbrush
+201,brush,A1,verb,My hair is easy to brush
+202,brush,A1,verb,Can you brush the hair of a baby?
+26,buy,A1,verb,I bought my car second-hand.
+27,buy,A1,verb,Where did you buy that dress?
+28,buy,A1,verb,Mum bought me a new coat.
+29,buy,A1,verb,Five pounds doesn't buy much nowadays.
+30,buy,A1,verb,Now is a good time to buy.
+31,buy,A1,verb,It's generally cheaper if you buy online.
+32,buy,A1,verb,Young people are very comfortable buying online.
+33,buy,A1,verb,There are some things money can't buy.
+34,buy,A1,verb,Can I buy you something to eat?
+35,buy,A1,verb,I can't afford to buy a new car.
+36,buy,A1,verb,No one would buy her the pink house.
+37,buy,A1,verb,People buy food at the market.
+38,buy,A1,verb,You can sell or buy a ticket.
+39,buy,A1,verb,We buy and sell things online.
+203,buy,A1,verb,I do not like buying expensive things
+204,buy,A1,verb,I like buying cheap things
+205,buy,A1,verb,I sell my old car to buy a new one
+206,buy,A1,verb,I buy a lot of drinks in the summer
+40,call,A1,verb,I'll call again later.
+41,call,A1,verb,Someone called the police.
+42,call,A1,verb,Stop calling me names!
+43,call,A1,verb,What's her sister called?
+44,call,A1,verb,Let's call on John.
+45,call,A1,verb,Just call me lucky.
+46,call,A1,verb,Did somebody call my name?
+47,call,A1,verb,'See you later!' she called.
+48,call,A1,verb,The union called a strike.
+49,call,A1,verb,I'll call you a taxi.
+50,call,A1,verb,Let's call it ten pounds.
+51,call,A1,verb,I call this place cold.
+52,call,A1,verb,I don't know anyone called Scott.
+53,call,A1,verb,I'll call a taxi for you.
+54,call,A1,verb,Are you calling me a liar?
+557,call,A1,verb,My dog is called Blacky
+558,call,A1,verb,I can not call my parents because I forgot my phone.
+559,call,A1,verb,"I do not like calling, I get nervous."
+55,catch,A1,verb,The murderer was never caught.
+56,catch,A1,verb,The wooden rafters caught fire.
+57,catch,A1,verb,I caught him when he tripped.
+58,catch,A1,verb,How many fish did you catch?
+59,catch,A1,verb,Can you catch the waiter's eye?
+60,catch,A1,verb,Our cat is hopeless at catching mice.
+61,catch,A1,verb,I caught her lying to me again.
+62,catch,A1,verb,You've caught me at a bad time.
+63,catch,A1,verb,The artist has caught her smile perfectly.
+64,catch,A1,verb,The dog caught the stick in its mouth.
+65,catch,A1,verb,I must go—I have a train to catch.
+66,catch,A1,verb,A sign on the wall caught my attention.
+67,catch,A1,verb,"Sorry, I didn't quite catch what you said."
+68,catch,A1,verb,Mark walked in and caught them at it.
+69,catch,A1,verb,I was hoping to catch you at home.
+560,catch,A1,verb,In football you can not catch the ball with your hands
+561,catch,A1,verb,"In baseball, it is important to catch the ball stongly"
+562,catch,A1,verb,"Catch the ball, do not drop it"
+563,catch,A1,verb,I catch the bus every morning
+564,catch,A1,verb,When I run fast no one can catch me
+74,clean,A1,adjective,Are your hands clean?
+75,clean,A1,adjective,The hotel was spotlessly clean.
+76,clean,A1,adjective,Cats are very clean animals.
+77,clean,A1,adjective,Keep the jokes clean please!
+78,clean,A1,adjective,I can't find a clean shirt.
+79,clean,A1,adjective,The room smelled clean and fresh.
+80,clean,A1,adjective,The plane made a clean take-off.
+81,clean,A1,adjective,The sport has a very clean image.
+82,clean,A1,adjective,A sharp knife makes a clean cut.
+83,clean,A1,adjective,I scrubbed the floor to get it clean.
+84,clean,A1,adjective,Start again on a clean sheet of paper.
+85,clean,A1,adjective,The police searched her but she was clean.
+86,clean,A1,adjective,Thousands were left without food or clean drinking water.
+87,clean,A1,adjective,The design has clean lines and a bright appearance.
+88,clean,A1,adjective,Fresh water is very clean here.
+565,clean,A1,adjective,Please do not drink that water; it is not clean
+566,clean,A1,adjective,I need to clean my glasses; they are dirty
+567,clean,A1,adjective,Your desk is dirty; please clean it
+568,clean,A1,adjective,The baby's clothes are never clean after eating.
+569,clean,A1,adjective,Cats like cleaning themselves.
+90,cook,A1,verb,The vegetables were cooked perfectly.
+91,cook,A1,verb,Who's going to cook supper?
+92,cook,A1,verb,Where did you learn to cook?
+93,cook,A1,verb,My husband is a great cook.
+95,cook,A1,verb,What's the best way to cook trout?
+96,cook,A1,verb,Make sure you cook the meat well.
+97,cook,A1,verb,Ensure that the meat is cooked through.
+98,cook,A1,verb,Cook me something else for a change.
+99,cook,A1,verb,Add the onion and cook for three minutes.
+100,cook,A1,verb,"While the pasta is cooking, prepare the sauce."
+101,cook,A1,verb,Turn the fish over so that it cooks evenly.
+102,cook,A1,verb,People cook food in the kitchen.
+570,cook,A1,verb,I like cooking pasta and pizza
+571,cook,A1,verb,"I do not have time to cook, so I go to the conbini"
+572,cook,A1,verb,"My father is a good cook, his pizza recipe is the best"
+573,cook,A1,verb,I want to learn how to cook
+574,cook,A1,verb,Cooking is a good skill to have
+575,cook,A1,verb,Without a kitchen you can not cook
+576,cook,A1,verb,You cannot cook a cheesecake without cheese
+577,cook,A1,verb,"I want to cook Italian food, but tomatoes are too expensive."
+578,cook,A1,verb,It is better to cook your own food.
+118,dance,A1,noun,Let's have a dance.
+119,dance,A1,noun,Would you like a dance?
+120,dance,A1,noun,The girls performed a graceful dance.
+121,dance,A1,noun,May I have the next dance?
+122,dance,A1,noun,Save the last dance for me.
+123,dance,A1,noun,The next dance will be a waltz.
+124,dance,A1,noun,Do you know any other Latin American dances?
+125,dance,A1,noun,The band finished with a few slow dances.
+127,dance,A1,noun,I took her to my first high school dance.
+128,dance,A1,noun,Are you going to the dance on Friday night?
+129,dance,A1,noun,Music makes people dance and sing.
+132,dance,A1,noun,Fun music makes me dance.
+579,dance,A1,noun,Flamenco is a traditional dance from Spain
+580,dance,A1,noun,Music and dance are my hobbies
+581,dance,A1,noun,"I do not want to go to the school dance, I am too shy"
+582,dance,A1,noun,I do not know how to dance.
+583,dance,A1,noun,Ballet is one of the most famous types of dancing
+298,draw,A1,verb,The movie is drawing large audiences.
+299,draw,A1,verb,The ducts draw out stale air.
+300,draw,A1,verb,The events continue to draw huge crowds.
+301,draw,A1,verb,The meeting was drawing to a close.
+302,draw,A1,verb,What conclusions did you draw from the report?
+303,draw,A1,verb,The plan has drawn a lot of criticism.
+304,draw,A1,verb,The course draws students from all over the country.
+305,draw,A1,verb,Spielberg refused to be drawn on his next movie.
+306,draw,A1,verb,"So far, the police investigation has drawn a blank."
+307,draw,A1,verb,Animals are instinctively drawn to those who like them.
+308,draw,A1,verb,Children like to draw pictures of animals.
+309,draw,A1,verb,Can you draw a map for me?
+310,draw,A1,verb,Artists draw lines and shapes.
+584,draw,A1,verb,I like drawing buildings because I want to be an architect.
+585,draw,A1,verb,My hobbies are drawing manga and playing guitar
+586,draw,A1,verb,"I tried to draw a cat, but it looks like a horse"
+380,enjoy,A1,verb,We enjoyed the game immensely.
+381,enjoy,A1,verb,I enjoy playing tennis and squash.
+382,enjoy,A1,verb,I hope you enjoy your trip.
+383,enjoy,A1,verb,I really enjoyed watching the film again.
+384,enjoy,A1,verb,The kids all seemed to enjoy themselves.
+385,enjoy,A1,verb,I simply enjoy the feeling of power.
+386,enjoy,A1,verb,We thoroughly enjoyed our time in New York.
+387,enjoy,A1,verb,Departmental managers enjoy considerable autonomy in the workplace.
+388,enjoy,A1,verb,People enjoy the music during the festival.
+389,enjoy,A1,verb,Most people enjoy music and hate noise.
+390,enjoy,A1,verb,He enjoys his job.
+391,enjoy,A1,verb,You can enjoy your meal here.
+392,enjoy,A1,verb,I enjoy my coffee.
+393,enjoy,A1,verb,Tourists enjoy sunshine and warm weather.
+394,enjoy,A1,verb,Kids enjoy playing outside.
+143,help,A1,verb,Could you possibly help me?
+144,help,A1,verb,I help you with that?
+145,help,A1,verb,I was only trying to help!
+146,help,A1,verb,Come and help me lift this box.
+147,help,A1,verb,We were helped ashore by local people.
+148,help,A1,verb,I help you to some more salad?
+149,help,A1,verb,God help us if this doesn't work.
+150,help,A1,verb,"I can do (to help), let me know."
+151,help,A1,verb,The support of our families has helped enormously.
+152,help,A1,verb,It helped being able to talk about it.
+153,help,A1,verb,We need new measures to help fight terrorism.
+154,help,A1,verb,"If you want another drink, just help yourself."
+155,help,A1,verb,Jo will help us with some of the organization.
+156,help,A1,verb,Following these steps will help in protecting our environment.
+157,help,A1,verb,Some history may help to explain why this is.
+326,join,A1,verb,I've joined an aerobics class.
+327,join,A1,verb,New members can join online.
+328,join,A1,verb,It costs £20 to join.
+329,join,A1,verb,The two armies joined battle.
+330,join,A1,verb,How do these two pieces join?
+331,join,A1,verb,The head was not joined onto the body.
+332,join,A1,verb,The two firms joined forces to win the contract.
+333,join,A1,verb,Education has been reluctant to join hands with business.
+334,join,A1,verb,You can join the wires together here.
+335,join,A1,verb,"My friends joined, but his friends left."
+336,join,A1,verb,I join a new club with my friend.
+366,jump,A1,verb,Can you jump that gate?
+367,jump,A1,verb,A loud bang made me jump.
+368,jump,A1,verb,Prices jumped by 60% last year.
+369,jump,A1,verb,The needle jumped across the dial.
+370,jump,A1,verb,There I go again—jumping to conclusions.
+371,jump,A1,verb,FTSE 100 benchmark index jumped 199.9 points.
+372,jump,A1,verb,I jumped my horse over all the fences.
+373,jump,A1,verb,Sales jumped from $2.7 billion to $3.5 billion.
+374,jump,A1,verb,The thieves jumped him in a dark alleyway.
+375,jump,A1,verb,The children were jumping up and down with excitement.
+376,jump,A1,verb,Kids like to jump and play outside.
+377,jump,A1,verb,The rabbits jump in the forest.
+378,jump,A1,verb,You can jump pages and read chapter five.
+379,jump,A1,verb,Do not jump here.
+395,know,A1,verb,I know it's here somewhere!
+396,know,A1,verb,"I'm not stupid, you know."
+397,know,A1,verb,I know exactly how you feel.
+398,know,A1,verb,Iran was formerly known as Persia.
+399,know,A1,verb,I know what I'm talking about.
+400,know,A1,verb,There's no knowing how he'll react.
+401,know,A1,verb,Do you know how to use spreadsheets?
+402,know,A1,verb,God knows what else they might find.
+403,know,A1,verb,I don’t know anything about making movies.
+404,know,A1,verb,"What does he know about football, anyway?"
+405,know,A1,verb,"Well, you know, it's difficult to explain."
+406,know,A1,verb,I know things will turn out all right.
+407,know,A1,verb,I made myself known to the hotel manager.
+408,know,A1,verb,I don’t know the first thing about cars.
+173,learn,A1,verb,I learnt the poem by heart.
+174,learn,A1,verb,"Some people never learn, do they?"
+175,learn,A1,verb,I'm sure she'll learn from her mistakes.
+176,learn,A1,verb,I soon learned not to ask too many questions.
+177,learn,A1,verb,I first learnt of his death many years later.
+178,learn,A1,verb,How did they react when they learned the news?
+190,learn,A1,verb,Learning new things is difficult
+191,learn,A1,verb,I like learning but not studying
+192,learn,A1,verb,I like to learn new languages
+193,learn,A1,verb,"I learned that word, but now I forgot"
+194,learn,A1,verb,My brother is learning to play the piano
+195,learn,A1,verb,I am learning to cook
+196,learn,A1,verb,How do you learn a new word?
+258,leave,A1,verb,"Leave the door open, please."
+259,leave,A1,verb,Red wine leaves a stain.
+260,leave,A1,verb,Seven from ten leaves three.
+261,leave,A1,verb,My assistant is threatening to leave.
+262,leave,A1,verb,People leave for better-paid jobs elsewhere.
+263,leave,A1,verb,You can leave your things here.
+264,leave,A1,verb,Leave the dishes—I'll do them later.
+265,leave,A1,verb,Why did you leave your last job?
+266,leave,A1,verb,Don't leave any of your belongings behind.
+267,leave,A1,verb,I'm afraid you leave me no choice.
+268,leave,A1,verb,Let's leave that topic for another day.
+269,leave,A1,verb,You can leave the cooking to me.
+270,leave,A1,verb,Don't leave her waiting outside in the rain.
+271,leave,A1,verb,Leave the rice to cook for 20 minutes.
+272,leave,A1,verb,"Someone called, but they didn't leave a message."
+424,like,A1,verb,I like to sing.
+425,like,A1,verb,Where would you like to live?
+426,like,A1,verb,What would you like to drink?
+427,like,A1,verb,How would you like to pay?
+428,like,A1,verb,Would you like to come with us?
+429,like,A1,verb,It looks like we’re going to be late.
+430,like,A1,verb,I like to finish all my work before dinner.
+431,like,A1,verb,We like to go on vacation in the summer.
+273,listen,A1,verb,Why won't you listen to reason?
+274,listen,A1,verb,I want you to listen and understand.
+275,listen,A1,verb,We hear and listen to the teacher.
+276,listen,A1,verb,Listening to music helps me relax.
+277,listen,A1,verb,You can listen to me now.
+278,listen,A1,verb,Students must listen to the teacher.
+279,listen,A1,verb,My friends always listen to me.
+280,listen,A1,verb,Now listen to the audio.
+281,listen,A1,verb,Everyone can listen and learn English today.
+282,listen,A1,verb,I listen and do not talk.
+283,listen,A1,verb,Dogs can listen better than humans
+284,listen,A1,verb,Kids listen to their mom.
+285,listen,A1,verb,We listen to music every day.
+286,listen,A1,verb,Teachers ask us to listen.
+432,live,A1,verb,It's a great place to live.
+433,live,A1,verb,Both her children still live at home.
+434,live,A1,verb,Women live longer than men in general.
+435,live,A1,verb,Spiders can live for several days without food.
+436,live,A1,verb,I absolutely could not live without my phone!
+466,live,A1,verb,Animals cannot live without water.
+550,live,A1,verb,Young people like living in the city.
+551,live,A1,verb,Most people live with their families.
+552,live,A1,verb,We watch sports live on TV.
+553,live,A1,verb,Broadcasters live stream news now.
+554,live,A1,verb,Music fans like to watch concerts live.
+555,live,A1,verb,You can watch live football here.
+351,look,A1,verb,We've been looking for you.
+352,look,A1,verb,Look how lazy we've become.
+353,look,A1,verb,Can't you look where you're going?
+354,look,A1,verb,The kitchen looks onto the garden.
+355,look,A1,verb,Are you still looking for a job?
+356,look,A1,verb,Don't worry—it looks worse than it is.
+357,look,A1,verb,It doesn't look like fun to me.
+358,look,A1,verb,You made me look a complete fool!
+359,look,A1,verb,The hotel looks out over the harbour.
+360,look,A1,verb,The government is looking to reduce inflation.
+361,look,A1,verb,"Now look here, it wasn't my fault."
+362,look,A1,verb,Look closely and tell me what you see.
+363,look,A1,verb,The film looks likely to offend many people.
+364,look,A1,verb,I got up and looked out of the window.
+365,look,A1,verb,It looks to me like they have a plan.
+311,love,A1,noun,I love to shop.
+312,love,A1,noun,I would love to come.
+313,love,A1,noun,Some people love to go fishing.
+314,love,A1,noun,I'm sure you will find true love.
+315,love,A1,noun,I fell in love with the house.
+316,love,A1,noun,I'd love to come but I can't.
+317,love,A1,noun,Writing the book was a labour of love.
+318,love,A1,noun,We would love to join you for dinner.
+319,love,A1,noun,I love to sleep late on the weekend.
+320,love,A1,noun,I love all animals.
+321,love,A1,noun,Love makes people happy.
+322,love,A1,noun,Family gives us love and care.
+323,love,A1,noun,Love is a strong human emotion.
+324,love,A1,noun,Children feel love from their parents.
+325,love,A1,noun,Parents show love to their babies.
+451,meet,A1,verb,I want you to meet me tomorrow.
+452,meet,A1,verb,Maybe we'll meet again some time.
+453,meet,A1,verb,Did you meet anyone in town?
+454,meet,A1,verb,I happened to meet him again.
+455,meet,A1,verb,I hope we'll meet again soon.
+456,meet,A1,verb,I can't possibly meet that deadline.
+457,meet,A1,verb,Let's meet for a drink after work.
+458,meet,A1,verb,Will you meet me at the airport?
+459,meet,A1,verb,The hotel bus meets all incoming flights.
+460,meet,A1,verb,Where did you first meet your husband?
+461,meet,A1,verb,The curtains don't meet in the middle.
+462,meet,A1,verb,Many families struggle to make ends meet.
+463,meet,A1,verb,We're meeting them outside the theatre at 7.
+464,meet,A1,verb,The airport must be expanded to meet demand.
+465,meet,A1,verb,Johns worked at various jobs before meeting Rauschenberg in 1954.
+158,play,A1,verb,Let's play a different game.
+159,play,A1,verb,Who's playing on the wing?
+160,play,A1,verb,Play us that new piece.
+161,play,A1,verb,I'm learning to play sax.
+162,play,A1,verb,Click below to play videos.
+163,play,A1,verb,I've played some fantastic venues.
+164,play,A1,verb,You'll have to play inside today.
+165,play,A1,verb,I've never played right back before.
+166,play,A1,verb,Play that new piece to us.
+167,play,A1,verb,Do you play a musical instrument?
+168,play,A1,verb,I try to play a DVD.
+169,play,A1,verb,I haven't got anybody to play with!
+170,play,A1,verb,I usually play chess with my brother.
+171,play,A1,verb,Have you played her at squash yet?
+172,play,A1,verb,I don't have anyone to play with.
+409,read,A1,verb,Go on—read it to us.
+410,read,A1,verb,The sign read ‘No admittance’.
+411,read,A1,verb,What does the thermometer read?
+412,read,A1,verb,"Generally, the article reads very well."
+413,read,A1,verb,The book is very easy to read.
+414,read,A1,verb,I just finished reading your recent article.
+415,read,A1,verb,How do you read the present situation?
+416,read,A1,verb,For ‘madam’ in line 3 read ‘madame’.
+417,read,A1,verb,I'm going to go to bed and read.
+418,read,A1,verb,I didn't have time to read the novel.
+419,read,A1,verb,Silence must not always be read as consent.
+420,read,A1,verb,A man came to read the gas meter.
+421,read,A1,verb,Statements from police officers were read to the court.
+422,read,A1,verb,The computer could not read the disk at all.
+423,read,A1,verb,"Reading between the lines, I think Clare needs money."
+500,repeat,A1,verb,Listen and repeat each sentence after me.
+501,repeat,A1,verb,The event will be repeated next year.
+502,repeat,A1,verb,History has a strange way of repeating itself.
+534,repeat,A1,verb,Listen first then repeat
+467,ride,A1,verb,I learnt to ride a horse as a child.
+481,ride,A1,verb,I ride my bike to school everyday
+482,ride,A1,verb,My father rides a motorbike to work
+483,ride,A1,verb,I ride the train every morning.
+484,ride,A1,verb,Do you know how to ride a horse?
+437,run,A1,verb,The train runs every half hour.
+438,run,A1,verb,Stan had the chainsaw running.
+439,run,A1,verb,I'll run you a bath.
+440,run,A1,verb,Who left the tap running?
+441,run,A1,verb,The wax began to run.
+442,run,A1,verb,We've run short of milk.
+443,run,A1,verb,You can run the program overnight.
+444,run,A1,verb,I'll run a bath for you.
+445,run,A1,verb,The smoke makes my eyes run.
+446,run,A1,verb,You've got your rivals running scared.
+447,run,A1,verb,The permit runs for three months.
+448,run,A1,verb,Both candidates have run a good campaign.
+449,run,A1,verb,Our van runs on (= uses) diesel.
+450,run,A1,verb,Don't forget to run a final spellcheck.
+207,say,A1,verb,The guidebook says to turn left.
+208,say,A1,verb,There's no saying how he'll react.
+209,say,A1,verb,You can't say fairer than that.
+210,say,A1,verb,I wouldn't say no to a pizza.
+211,say,A1,verb,"I was surprised, to say the least."
+212,say,A1,verb,Try to say that line with more conviction.
+213,say,A1,verb,The book doesn't say where he was born.
+214,say,A1,verb,I say (= suggest) we go without them.
+215,say,A1,verb,It's hard to say what caused the accident.
+216,say,A1,verb,Just say he refuses to talk to you.
+217,say,A1,verb,I dare say you know about it already.
+218,say,A1,verb,"I say, can you lend me five pounds?"
+219,say,A1,verb,Do you mean to say you've lost it?
+220,say,A1,verb,What would you say to eating out tonight?
+221,say,A1,verb,Who can say what will happen next year?
+249,sing,A1,verb,I just can't sing in tune!
+250,sing,A1,verb,Will you sing us a song?
+251,sing,A1,verb,Will you sing a song to us?
+252,sing,A1,verb,The birds were singing outside my window.
+253,sing,A1,verb,I was invited to sing in a choir.
+254,sing,A1,verb,The kettle was singing away on the stove.
+255,sing,A1,verb,Birds started singing because they thought dawn had broken.
+256,sing,A1,verb,Children sing a happy birthday song.
+257,sing,A1,verb,I can not sing very well
+233,sit,A1,verb,It’s too cold to sit outside.
+234,sit,A1,verb,A large bus was sitting outside.
+235,sit,A1,verb,Candidates will sit the examinations in June.
+236,sit,A1,verb,The children were all sitting quietly and listening.
+237,sit,A1,verb,The pot was sitting in a pool of water.
+238,sit,A1,verb,Most of the students sit at least 5 GCSEs.
+485,speak,A1,verb,I hate speaking in public.
+486,speak,A1,verb,Recent events speak for themselves.
+487,speak,A1,verb,President refused to speak to reporters.
+488,speak,A1,verb,What language is it they're speaking?
+489,speak,A1,verb,What language are they speaking in?
+490,speak,A1,verb,Don't speak ill of the dead.
+491,speak,A1,verb,The illness left him unable to speak.
+492,speak,A1,verb,The brochure speaks of beautiful secluded grounds.
+493,speak,A1,verb,What you wear speaks volumes about you.
+494,speak,A1,verb,"Without speaking, she stood up and went out."
+495,speak,A1,verb,Hundreds of people came to hear her speak.
+496,speak,A1,verb,"There are, broadly speaking, two ways of doing this."
+497,speak,A1,verb,"All cut from the same cloth, so to speak."
+498,speak,A1,verb,Everyone should have the right to speak their mind.
+499,speak,A1,verb,I can speak English and French.
+179,study,A1,noun,Students study English and math.
+180,study,A1,noun,My brother studies Chinese
+181,study,A1,noun,I do not like to study
+182,study,A1,noun,My mother studied French in High School
+183,study,A1,noun,I like to study English
+184,study,A1,noun,I am busy. I can not study today.
+185,study,A1,noun,We can study together
+186,study,A1,noun,I study every day
+187,study,A1,noun,I hate studying at night
+188,study,A1,noun,I like to study at the library
+189,study,A1,noun,I can not study without my favorite pencil
+287,swim,A1,verb,Sharks must swim or die.
+288,swim,A1,verb,I go swimming twice a week.
+289,swim,A1,verb,Ducks were swimming around on the river.
+290,swim,A1,verb,We always went swimming together in our indoor pool.
+291,swim,A1,verb,Kids love to swim and play.
+292,swim,A1,verb,Fish swim and birds fly.
+293,swim,A1,verb,You can swim and have fun in the summer
+294,swim,A1,verb,I like to swim.
+295,swim,A1,verb,Students learn to swim in school.
+296,swim,A1,verb,Dogs like to swim.
+297,swim,A1,verb,Boats float and fish swim.
+595,take,A1,verb,Free newspapers: please take one.
+596,take,A1,verb,Someone has taken my scarf.
+597,take,A1,verb,Come in; take a seat.
+598,take,A1,verb,How long will the flight take?
+599,take,A1,verb,The sign must be taken down.
+600,take,A1,verb,Did the burglars take anything valuable?
+601,take,A1,verb,The subway took her to work.
+602,take,A1,verb,The car took us to school.
+603,take,A1,verb,The train took us back home.
+604,take,A1,verb,I need a shower—I won't take long.
+605,take,A1,verb,Take the second road on the right.
+606,take,A1,verb,Please don't take this the wrong way.
+607,take,A1,verb,The train took us to the city.
+133,talk,A1,verb,We often talked of the war.
+134,talk,A1,verb,Who were you talking to just now?
+135,talk,A1,verb,Mary is talking of looking for another job.
+136,talk,A1,verb,Is there anything you'd like to talk about?
+137,talk,A1,verb,We talked on the phone for over an hour.
+138,talk,A1,verb,Don talks to himself in the mirror while shaving.
+139,talk,A1,verb,Talk with your doctor before radically changing your diet.
+140,talk,A1,verb,We want to talk to people about this issue.
+141,talk,A1,verb,Friends talk and laugh together.
+142,talk,A1,verb,I talk to my friends every day.
+536,tell,A1,verb,Tell me where you live.
+537,tell,A1,verb,Did she tell you her name?
+538,tell,A1,verb,Don't tell me what to do!
+539,tell,A1,verb,There's no telling how they'll react.
+540,tell,A1,verb,I've often heard tell of such things.
+541,tell,A1,verb,Are you sure you're telling the truth?
+542,tell,A1,verb,I kept telling myself to keep calm.
+543,tell,A1,verb,Can you tell me when the movie starts?
+544,tell,A1,verb,I can't tell you how happy I am.
+545,tell,A1,verb,All of them had an interesting story to tell.
+546,tell,A1,verb,There was a sign telling motorists to slow down.
+547,tell,A1,verb,He will tell you the answer.
+548,tell,A1,verb,Maps tell us where to go.
+549,tell,A1,verb,My friends tell me everything.
+522,use,A1,verb,The poem uses simple language.
+523,use,A1,verb,Have you ever used this software before?
+524,use,A1,verb,You have to use the past tense.
+525,use,A1,verb,We used a carrot for the snowman's nose.
+526,use,A1,verb,I hope you haven't used all the milk.
+527,use,A1,verb,The applicator makes the glue easy to use.
+528,use,A1,verb,The building is currently being used as a warehouse.
+529,use,A1,verb,"Credit cards, used appropriately, are a great financial tool."
+530,use,A1,verb,Manufacturers tend to use disks made in the US.
+531,use,A1,verb,The church is sometimes used as a concert venue.
+532,use,A1,verb,You should learn to use your time more efficiently.
+533,use,A1,verb,How often do you use (= travel by) the bus?
+518,visit,A1,verb,Ships visit the island occasionally.
+519,visit,A1,verb,"For more information, visit our website."
+520,visit,A1,verb,Government inspectors are visiting schools in the area.
+521,visit,A1,verb,You can visit our website today.
+103,walk,A1,verb,I always walk to school.
+104,walk,A1,verb,We can easily walk it.
+105,walk,A1,verb,I ignored him and walked on.
+106,walk,A1,verb,The baby is just learning to walk.
+107,walk,A1,verb,People walking past were staring at him.
+108,walk,A1,verb,"You don't mind walking back, do you?"
+109,walk,A1,verb,I just happened to be walking by.
+110,walk,A1,verb,Children here walk several miles to school.
+111,walk,A1,verb,I haven’t walked you off your feet.
+112,walk,A1,verb,We walked along in silence for a while.
+113,walk,A1,verb,I walked in the door and looked around.
+114,walk,A1,verb,We're going walking in the mountains this summer.
+115,walk,A1,verb,Things tend to walk here (= be stolen).
+116,walk,A1,verb,It looks like a nice place to walk around.
+117,walk,A1,verb,"Taking a deep breath, she walked into the room."
+503,want,A1,verb,I want to sleep.
+504,want,A1,verb,I want a new job.
+505,want,A1,verb,I want is the truth.
+506,want,A1,verb,I wanted to go home.
+507,want,A1,verb,The plants want watering daily.
+508,want,A1,verb,Do you want to go?
+509,want,A1,verb,Do you want some more tea?
+510,want,A1,verb,What I wanted was to upset you.
+511,want,A1,verb,What do you want for Christmas?
+512,want,A1,verb,The party wants her as leader.
+513,want,A1,verb,Do you want me to help?
+514,want,A1,verb,We didn't want this to happen.
+515,want,A1,verb,What do you want from me?
+516,want,A1,verb,I want to see a movie.
+517,want,A1,verb,I wanted bacon and eggs for breakfast.
+222,wash,A1,verb,Water washed over the deck.
+223,wash,A1,verb,Wash the fruit thoroughly before eating.
+224,wash,A1,verb,I washed and changed before going out.
+225,wash,A1,verb,Pieces of the wreckage were washed ashore.
+226,wash,A1,verb,The potatoes are washed clean without damaging the skins.
+227,wash,A1,verb,By this time we were already washed and dressed.
+228,wash,A1,verb,The beach had been washed clean by the tide.
+229,wash,A1,verb,Clean water does not smell bad.
+230,wash,A1,verb,Dirty hands need a wash.
+231,wash,A1,verb,I can wash and clean my clothes tomorrow.
+232,wash,A1,verb,I need a wash.
+239,watch,A1,verb,"Hey, watch where you're going!"
+240,watch,A1,verb,We'll watch for any developments.
+241,watch,A1,verb,Watch your bag—there are thieves around.
+242,watch,A1,verb,We're watching the situation very carefully.
+243,watch,A1,verb,Watch your head on the low ceiling.
+244,watch,A1,verb,"I was in the living room, watching TV."
+245,watch,A1,verb,We watched to see what would happen next.
+246,watch,A1,verb,I can watch the baby for a while.
+247,watch,A1,verb,The food retail sector is one to watch.
+248,watch,A1,verb,I love just watching the world go by.
+535,watch,A1,verb,I closely watch the situation
+587,watch,A1,verb,I bought an old watch in London
+588,watch,A1,verb,You cannot watch TV until you finish your homework
+589,watch,A1,verb,My older brother watches us when our parents are not home
+590,watch,A1,verb,Could you watch my bags for me while I buy a paper?
+591,watch,A1,verb,I like watching the birds fly in the sky
+592,watch,A1,verb,"You cannot watch that movie in Japanese, only in English"
+593,watch,A1,verb,Watching my friends play football makes me happy
+594,watch,A1,verb,Watching Youtube videos makes my eyes tired
+468,work,A1,verb,I've always worked in education.
+469,work,A1,verb,Doctors often work very long hours.
+470,work,A1,verb,Do you enjoy working with children?
+471,work,A1,verb,How does the device actually work?
+472,work,A1,verb,The system seemed to work well.
+473,work,A1,verb,The kids always work hard at school.
+474,work,A1,verb,My son is working as a teacher.
+475,work,A1,verb,The machine is worked by wind power.
+476,work,A1,verb,I've been working at my assignment all day.
+477,work,A1,verb,Work with a partner to solve the problem.
+478,work,A1,verb,The pills the doctor gave me aren't working.
+479,work,A1,verb,The whole team is currently working on the project.
+480,work,A1,verb,We work closely with clients to develop specific solutions.
+337,write,A1,verb,Write me while you're away.
+338,write,A1,verb,I'll write you out a receipt.
+339,write,A1,verb,I haven't got anything to write with.
+340,write,A1,verb,Write your name at the top of the paper.
+341,write,A1,verb,I wanted to travel and then write about it.
+342,write,A1,verb,Students need to write their name here.
+343,write,A1,verb,"The teacher reads, and the students write."
+344,write,A1,verb,You can send and write emails with that laptop.
+345,write,A1,verb,Teachers write notes on the board every morning.
+346,write,A1,verb,You can write your address here.
+347,write,A1,verb,Pencils can not write on metal.
+348,write,A1,verb,Now we write our names.
+349,write,A1,verb,I write my name here.
+350,write,A1,verb,My father writes a new book; he is a writer.
