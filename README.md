@@ -105,6 +105,16 @@ pilot set is the next step (see Status below).
 
 The pipeline is also available as a small local web app instead of just the two CLI scripts above -- type any word and the sentence it's used in, get real distractors from both branches, review/adjust which to keep, export a `.tsv`. Not limited to the 44 pilot words. See `webapp/README.md` for how to run it (needs the same venv as the semantic branch, plus `pip install fastapi uvicorn`).
 
+## Design notes
+
+- [docs/scoring-objectives.md](docs/scoring-objectives.md) — why the two
+  branches optimize different, independent objectives (surface-form
+  confusability vs. contextual plausibility) and are merged as a union rather
+  than fused into one score.
+- [docs/data-assumptions.md](docs/data-assumptions.md) — what the pipeline
+  assumes about its input data (CEFR-J POS/level semantics, corpus provenance,
+  vector coverage, tokenization gaps) and where those assumptions can bite.
+
 ## Data sources
 
 Only `data/pilot/` is committed to this repo (it's your own dataset). Every
