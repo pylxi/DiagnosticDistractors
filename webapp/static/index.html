@@ -82,17 +82,17 @@ button.ghost {
 <body>
 <div class="wrap">
   <h1>Diagnostic Distractors</h1>
-  <p class="lede">Type a target word and the sentence it appears in. Both branches run for real (spelling/phonetic + DeBERTa-scored semantic), and every candidate below is a checkbox — review the auto-picks, add or drop anything, then export.</p>
+  <p class="lede">Type a target word (must be in the CEFR-J wordlist) and the sentence it appears in. Both branches run for real (spelling/phonetic + masked-LM semantic), and every candidate below is a checkbox — review the auto-picks, add or drop anything, then export.</p>
 
   <div class="panel">
     <h2>Input</h2>
     <div class="row">
       <div>
-        <label for="word">Target word</label>
+        <label for="word">Target word <span class="hint" style="margin:0;">(must be a CEFR-J word)</span></label>
         <input type="text" id="word" placeholder="e.g. ask">
       </div>
       <div>
-        <label for="pos">Part of speech <span class="hint" style="margin:0;">(optional — auto-detected)</span></label>
+        <label for="pos">Part of speech <span class="hint" style="margin:0;">(only for multi-sense words)</span></label>
         <select id="pos">
           <option value="">auto</option>
           <option value="verb">verb</option>
@@ -102,7 +102,7 @@ button.ghost {
         </select>
       </div>
       <div>
-        <label for="level">CEFR level <span class="hint" style="margin:0;">(optional — auto-detected)</span></label>
+        <label for="level">CEFR level <span class="hint" style="margin:0;">(only for multi-sense words)</span></label>
         <select id="level">
           <option value="">auto</option>
           <option>A1</option><option>A2</option><option>B1</option>
@@ -210,7 +210,7 @@ async function generate() {
 
 function render(d) {
   document.getElementById('r-word').textContent = d.word;
-  document.getElementById('r-level').textContent = d.level + ' / ' + d.pos + (d.in_cefr_j ? '' : ' (not in CEFR-J — level/POS entered manually)');
+  document.getElementById('r-level').textContent = d.level + ' / ' + d.pos;
   document.getElementById('r-stem').textContent = d.stem;
   document.getElementById('r-matched').textContent = d.matched_surface_form;
 

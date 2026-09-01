@@ -55,6 +55,41 @@ class GenerateRequest(BaseModel):
     level: Optional[str] = None
 
 
+def _resolve_cefr_entry(word, entries, req_pos, req_level):
+    """Pick the single CEFR-J (pos, level) this request refers to.
+
+    `entries` is the word's list of (pos, level) pairs from CEFR-J (non-empty).
+    We never guess when the word is ambiguous: many CEFR-J headwords carry more
+    than one entry (run/brush/call are noun *and* verb), so silently taking the
+    first one -- as the old auto-detect did -- picks the wrong sense more often
+    than not. Instead, if the request doesn't narrow the word to exactly one
+    CEFR-J entry, we ask the caller to disambiguate.
+    """
+    req_pos = (req_pos or "").strip().lower() or None
+    req_level = (req_level or "").strip() or None
+
+    matching = [
+        (p, l) for p, l in entries
+        if (req_pos is None or p == req_pos) and (req_level is None or l == req_level)
+    ]
+    if len(matching) == 1:
+        return matching[0]
+
+    options = ", ".join(f"{p}/{l}" for p, l in entries)
+    if not matching:
+        raise HTTPException(
+            400,
+            f"'{word}' has no CEFR-J entry matching "
+            f"{req_pos or 'any pos'}/{req_level or 'any level'}. "
+            f"Its CEFR-J entries are: {options}.",
+        )
+    raise HTTPException(
+        400,
+        f"'{word}' has more than one sense in CEFR-J ({options}); "
+        f"choose the part of speech (and level, if still ambiguous) you mean.",
+    )
+
+
 @app.post("/api/generate")
 def generate(req: GenerateRequest):
     word = req.word.lower().strip()
@@ -63,18 +98,17 @@ def generate(req: GenerateRequest):
     if not word or not sentence:
         raise HTTPException(400, "Both a word and a sentence are required.")
 
-    pos, level = req.pos, req.level
-    auto = cefr.entries(word)
-    if not pos or not level:
-        if not auto:
-            raise HTTPException(
-                400,
-                f"'{word}' isn't in the CEFR-J wordlist, so its level/part of "
-                f"speech can't be auto-detected. Enter a level and POS "
-                f"yourself if you're sure this is the right target word.",
-            )
-        pos = pos or auto[0][0]
-        level = level or auto[0][1]
+    # Target words must come from the CEFR-J wordlist -- that list is the whole
+    # candidate universe both branches draw distractors from, so a target
+    # outside it isn't allowed (no manual pos/level override to smuggle one in).
+    entries = cefr.entries(word)
+    if not entries:
+        raise HTTPException(
+            400,
+            f"'{word}' isn't in the CEFR-J wordlist. Only CEFR-J words can be "
+            f"used as target words.",
+        )
+    pos, level = _resolve_cefr_entry(word, entries, req.pos, req.level)
 
     stem, matched = semantic_branch.make_stem(sentence, word)
     if stem is None:
@@ -91,7 +125,7 @@ def generate(req: GenerateRequest):
         "sentence": sentence,
         "stem": stem,
         "matched_surface_form": matched,
-        "in_cefr_j": bool(auto),
+        "in_cefr_j": True,  # enforced above; kept for the frontend's shape
     }
 
     try:

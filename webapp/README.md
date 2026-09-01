@@ -45,9 +45,13 @@ server reports ready — that's expected, it only happens once. Then open
 
 ## Known edges
 
-- A target word that isn't in the CEFR-J wordlist has no auto-detected
-  level/POS — the form lets you type them in yourself; the app will run
-  fine, it just can't tell you what level the word "should" be.
+- A target word must be in the CEFR-J wordlist — that list is the candidate
+  universe both branches draw from, so a word outside it is rejected rather
+  than run with a made-up level/POS.
+- A word with more than one CEFR-J sense (noun *and* verb, like `run` or
+  `brush`) is not auto-picked — the app asks you to choose the part of speech
+  (and level, if still ambiguous), instead of silently taking the first-listed
+  sense. Words with a single CEFR-J entry fill in automatically.
 - A target word with no FastText vector produces an empty semantic-branch
   result (spelling branch is unaffected) — the page says so rather than
   showing nothing with no explanation.
