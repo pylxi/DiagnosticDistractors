@@ -13,7 +13,7 @@ from pipeline import cefr_lookup as cefr
 
 fastapi = pytest.importorskip("fastapi")
 from fastapi import HTTPException
-from webapp.app import _resolve_cefr_entry
+from webapp.app import _resolve_cefr_entry, lookup
 
 
 def resolve(word, pos=None, level=None):
@@ -49,3 +49,27 @@ def test_pos_not_in_cefr_j_for_that_word_is_rejected():
 
 def test_case_insensitive_pos_match():
     assert resolve("brush", pos="VERB") == ("verb", "A1")
+
+
+# ---- /api/lookup (drives the UI's show/hide of the POS control) ----------
+
+def test_lookup_multi_sense_word_offers_pos_options():
+    # brush = noun + verb -> UI shows the POS dropdown with exactly these.
+    out = lookup("brush")
+    assert out["in_cefr_j"] is True
+    assert out["pos_options"] == ["noun", "verb"]
+    assert {"pos": "verb", "level": "A1"} in out["entries"]
+
+
+def test_lookup_single_sense_word_has_one_pos_option():
+    # ask = verb only -> UI hides the POS dropdown and resolves automatically.
+    out = lookup("ask")
+    assert out["in_cefr_j"] is True
+    assert out["pos_options"] == ["verb"]
+
+
+def test_lookup_word_not_in_cefr_j():
+    out = lookup("zzznotaword")
+    assert out["in_cefr_j"] is False
+    assert out["pos_options"] == []
+    assert out["entries"] == []

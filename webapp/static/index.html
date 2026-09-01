@@ -77,6 +77,9 @@ button.ghost {
 .export-row { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
 .export-count { font-size: 0.85rem; color: var(--text-dim); }
 .hint { font-size: 0.8rem; color: var(--text-dim); margin: -8px 0 14px; }
+.field-note { font-size: 0.8rem; margin: -8px 0 10px; min-height: 1.1em; }
+.field-note.bad { color: var(--bad); }
+.field-note.info { color: var(--text-dim); }
 </style>
 </head>
 <body>
@@ -89,25 +92,16 @@ button.ghost {
     <div class="row">
       <div>
         <label for="word">Target word <span class="hint" style="margin:0;">(must be a CEFR-J word)</span></label>
-        <input type="text" id="word" placeholder="e.g. ask">
+        <input type="text" id="word" placeholder="e.g. ask" autocomplete="off">
+        <div class="field-note" id="word-note"></div>
       </div>
-      <div>
-        <label for="pos">Part of speech <span class="hint" style="margin:0;">(only for multi-sense words)</span></label>
-        <select id="pos">
-          <option value="">auto</option>
-          <option value="verb">verb</option>
-          <option value="noun">noun</option>
-          <option value="adjective">adjective</option>
-          <option value="adverb">adverb</option>
-        </select>
+      <div id="pos-field" style="display:none;">
+        <label for="pos">Part of speech</label>
+        <select id="pos"></select>
       </div>
-      <div>
-        <label for="level">CEFR level <span class="hint" style="margin:0;">(only for multi-sense words)</span></label>
-        <select id="level">
-          <option value="">auto</option>
-          <option>A1</option><option>A2</option><option>B1</option>
-          <option>B2</option><option>C1</option><option>C2</option>
-        </select>
+      <div id="level-field" style="display:none;">
+        <label for="level">CEFR level</label>
+        <select id="level"></select>
       </div>
     </div>
     <label for="sentence">Sentence</label>
@@ -296,6 +290,81 @@ function exportSelected() {
   a.remove();
   URL.revokeObjectURL(url);
 }
+
+// --- CEFR-J-driven pos/level controls ------------------------------------
+// The POS control is shown only when the typed word has more than one sense
+// in CEFR-J (brush = noun + verb); a single-sense word resolves on its own.
+// The level control appears only when a chosen POS still leaves >1 level.
+let LOOKUP = null;
+
+function levelsFor(pos) {
+  if (!LOOKUP) return [];
+  return [...new Set(LOOKUP.entries.filter(e => !pos || e.pos === pos).map(e => e.level))];
+}
+
+function updateLevelField() {
+  const levelField = document.getElementById('level-field');
+  const levelSel = document.getElementById('level');
+  const posShown = document.getElementById('pos-field').style.display !== 'none';
+  const posVal = posShown ? document.getElementById('pos').value
+                          : (LOOKUP && LOOKUP.pos_options[0]) || '';
+  // Multi-POS word with no POS chosen yet: nothing to scope a level to.
+  if (posShown && !posVal) { levelField.style.display = 'none'; levelSel.innerHTML = ''; return; }
+  const levels = levelsFor(posVal);
+  if (levels.length > 1) {
+    levelSel.innerHTML = '<option value="">— choose —</option>' +
+      levels.map(l => `<option>${l}</option>`).join('');
+    levelField.style.display = '';
+  } else {
+    levelField.style.display = 'none';
+    levelSel.innerHTML = '';
+  }
+}
+
+async function lookupWord() {
+  const word = document.getElementById('word').value.trim().toLowerCase();
+  const note = document.getElementById('word-note');
+  const posField = document.getElementById('pos-field');
+  const levelField = document.getElementById('level-field');
+
+  // Reset controls (hidden + empty, so nothing stale is submitted).
+  posField.style.display = 'none';
+  levelField.style.display = 'none';
+  document.getElementById('pos').innerHTML = '';
+  document.getElementById('level').innerHTML = '';
+  note.textContent = ''; note.className = 'field-note';
+  LOOKUP = null;
+  if (!word) return;
+
+  let data;
+  try {
+    const res = await fetch('/api/lookup?word=' + encodeURIComponent(word));
+    data = await res.json();
+  } catch (e) { return; }
+  if (document.getElementById('word').value.trim().toLowerCase() !== word) return; // raced
+  LOOKUP = data;
+
+  if (!data.in_cefr_j) {
+    note.textContent = `“${word}” isn’t in the CEFR-J wordlist — only CEFR-J words can be targets.`;
+    note.className = 'field-note bad';
+    return;
+  }
+  if (data.pos_options.length > 1) {
+    document.getElementById('pos').innerHTML = '<option value="">— choose —</option>' +
+      data.pos_options.map(p => `<option value="${p}">${p}</option>`).join('');
+    posField.style.display = '';
+    note.textContent = `“${word}” has ${data.pos_options.length} senses in CEFR-J — pick the part of speech.`;
+    note.className = 'field-note info';
+  } else {
+    const only = data.entries[0];
+    note.textContent = `“${word}” → ${only.pos} / ${only.level} (from CEFR-J).`;
+    note.className = 'field-note info';
+    updateLevelField();
+  }
+}
+
+document.getElementById('word').addEventListener('change', lookupWord);
+document.getElementById('pos').addEventListener('change', updateLevelField);
 
 document.getElementById('generate-btn').addEventListener('click', generate);
 document.getElementById('export-btn').addEventListener('click', exportSelected);

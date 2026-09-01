@@ -48,6 +48,22 @@ def health():
     return {"ok": True, "model": _MODEL_NAME}
 
 
+@app.get("/api/lookup")
+def lookup(word: str):
+    """The CEFR-J entries for a word, so the UI can tell whether a target is
+    valid at all and whether it needs a part of speech chosen. A word with a
+    single distinct POS resolves automatically; one with several (brush =
+    noun+verb) needs the user to pick, so the POS control is only shown then."""
+    word = word.lower().strip()
+    entries = cefr.entries(word)
+    return {
+        "word": word,
+        "in_cefr_j": bool(entries),
+        "entries": [{"pos": p, "level": l} for p, l in entries],
+        "pos_options": sorted({p for p, _ in entries}),
+    }
+
+
 class GenerateRequest(BaseModel):
     word: str
     sentence: str
