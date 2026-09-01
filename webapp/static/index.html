@@ -233,7 +233,7 @@ function render(d) {
   } else {
     document.getElementById('sem-funnel').innerHTML = [
       kvRow('CEFR-J candidate pool (matching pos/level ±1)', sem.n_cefr_candidate_pool),
-      kvRow('→ scored by DeBERTa, top-k kept', sem.n_scored_by_model),
+      kvRow('→ scored by the masked-LM, top-k kept', sem.n_scored_by_model),
       kvRow('→ has a FastText vector', sem.n_with_vectors),
     ].join('');
 
