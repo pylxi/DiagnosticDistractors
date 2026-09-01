@@ -18,8 +18,8 @@ generators, merged into one pool for human review:
   (quiet/quite). No model inference — pure lookup and rule-based generation
   over JMdict and the CEFR-J wordlist.
 - **Semantic branch** (`pipeline/semantic_branch.py`) — catches confusions
-  from *meaning in context*: a local DeBERTa-v3 masked-language model scores
-  every CEFR-J word at the target's level for how well it fits the blanked
+  from *meaning in context*: a local masked-language model (roberta-large by
+  default) scores every CEFR-J word at the target's level for how well it fits the blanked
   sentence, then FastText cosine similarity sorts survivors into a spread of
   plausibility (near-miss / thematic / control) rather than three
   near-synonyms.
@@ -49,7 +49,7 @@ DiagnosticDistractors/
 │   ├── spelling_branch.py      # orchestrates the four spelling signals above
 │   ├── build_loanword_index.py # builds pipeline/cache/loanwords.json from JMdict
 │   ├── fasttext_bin_probe.py   # low-memory reader for the full cc.en.300.bin FastText model
-│   ├── semantic_branch.py      # DeBERTa masking + CEFR-constrained scoring + tiering
+│   ├── semantic_branch.py      # masked-LM masking + CEFR-constrained scoring + tiering
 │   ├── step1_load_data.py      # sanity-checks that every data source loads
 │   └── cache/                  # generated — loanwords.json, semantic_branch_result.json
 ├── data/
@@ -59,6 +59,7 @@ DiagnosticDistractors/
 │   ├── edict/                   # external (gitignored)
 │   └── wordnet_ewn/              # external, not yet wired into either branch (gitignored)
 ├── experiments/                 # ad-hoc scratch output, not part of the pipeline (gitignored)
+├── webapp/                      # live web app -- type a word+sentence, review, export (see webapp/README.md)
 └── requirements.txt
 ```
 
@@ -66,8 +67,8 @@ DiagnosticDistractors/
 
 The spelling branch and all the lookup/data-loading code need nothing beyond
 `requirements.txt` and run fine in a lightweight environment. **The semantic
-branch needs a real machine with network access**: it downloads
-`microsoft/deberta-v3-large` on first use and needs enough RAM/disk to run
+branch needs a real machine with network access**: it downloads its model
+(`roberta-large` by default) on first use and needs enough RAM/disk to run
 it. Run it from a normal desktop/laptop Python environment (a venv is
 enough), not a constrained sandbox.
 
@@ -100,6 +101,10 @@ python3 pipeline/semantic_branch.py
 `pipeline/cache/semantic_branch_result.json`. Running it against the full
 pilot set is the next step (see Status below).
 
+## Live web app
+
+The pipeline is also available as a small local web app instead of just the two CLI scripts above -- type any word and the sentence it's used in, get real distractors from both branches, review/adjust which to keep, export a `.tsv`. Not limited to the 44 pilot words. See `webapp/README.md` for how to run it (needs the same venv as the semantic branch, plus `pip install fastapi uvicorn`).
+
 ## Data sources
 
 Only `data/pilot/` is committed to this repo (it's your own dataset). Every
@@ -120,16 +125,29 @@ large for git — download each into the path shown:
 - **Spelling branch: done.** All four signals (gairaigo exact, phonetic swap,
   gairaigo near, Levenshtein) validated, including a fix for a JMdict
   homograph-collision bug (unrelated senses sharing one katakana reading).
-- **Semantic branch: done for a 3-word sample**, confirmed end to end
-  (masking → CEFR-constrained DeBERTa scoring → FastText cosine tiering).
-  Fixed a real low-yield bug (candidate generation now scores CEFR-J words
-  directly instead of filtering DeBERTa's unconstrained output) and a tier-
+- **Semantic branch: architecture done**, confirmed end to end
+  (masking → CEFR-constrained scoring → FastText cosine tiering). Fixed a
+  real low-yield bug (candidate generation now scores CEFR-J words directly
+  instead of filtering the model's unconstrained output) and a tier-
   visibility bug (candidates between the 70th–95th percentile were silently
   dropped from the debug output).
-- **Not yet done:** running the full 44-word / 598-row pilot batch;
-  WordNet-seeded candidates as a secondary semantic signal; multi-subword-
-  token scoring in the semantic branch; merging both branches' output into
-  one candidate pool with a human review step.
+- **2026-09-01: found and fixed a serious bug** — `microsoft/deberta-v3-large`
+  was pretrained with ELECTRA-style replaced-token-detection, not
+  masked-language-modeling, so its fill-mask head was never trained;
+  `transformers` silently bolted on a freshly random-initialized head every
+  time it loaded (the "tied weights"/`cls.predictions.*` MISSING warning at
+  load time, previously and incorrectly assumed benign). Every semantic-branch
+  result generated before this date was scoring candidates against random
+  noise, not real contextual fit. Switched the default model to
+  `roberta-large` (a genuinely MLM-pretrained model) and confirmed
+  reproducible, sensible output across separate process restarts. The 44-word
+  pilot batch and the Pipeline Trace artifact's data need to be regenerated
+  against the fixed model.
+- **Not yet done:** WordNet-seeded candidates as a secondary semantic signal;
+  multi-subword-token scoring in the semantic branch; merging both branches'
+  output into one candidate pool with a human review step; a fuller refresh
+  of this Status section (it still doesn't mention the live web app or the
+  pytest test suite, both of which exist now).
 
 ## A note on `experiments/`
 

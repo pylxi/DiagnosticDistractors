@@ -1,11 +1,11 @@
 """
-Semantic distractor branch: constrained-vocabulary DeBERTa-v3 mask scoring ->
+Semantic distractor branch: constrained-vocabulary masked-LM mask scoring ->
 cosine-similarity percentile tiering.
 
 Candidate generation strategy (revised 2026-08-31): instead of asking
-DeBERTa for its unconstrained top-K fill-mask guesses and then throwing away
+the model for its unconstrained top-K fill-mask guesses and then throwing away
 whatever isn't a CEFR-J word at the right level (which left some sentences
-with zero surviving candidates -- DeBERTa's raw suggestions skew well above
+with zero surviving candidates -- the model's raw suggestions skew well above
 A1/A2 vocabulary), we score the CEFR-J words directly. For every CEFR-J word
 at the target POS/level (or an adjacent level), we read off the model's own
 probability for that exact word at the masked position. This guarantees a
@@ -16,8 +16,21 @@ we're never tempted to widen the level window to compensate (a distractor
 that's obviously too hard isn't a distractor, it's a giveaway).
 
 Multi-subword CEFR-J words are skipped for now (most short A1/A2 words are
-single tokens in DeBERTa's ~128k vocab, so this covers the bulk of cases);
+single tokens in the model's vocab, so this covers the bulk of cases);
 extending to multi-token scoring is a follow-up if it turns out to matter.
+
+IMPORTANT (2026-09-01): the default model_name below is roberta-large, not
+microsoft/deberta-v3-large. deberta-v3-large was pretrained with ELECTRA-style
+replaced-token-detection, not masked-language-modeling, so it has no trained
+fill-mask head -- transformers silently bolts on a freshly RANDOM-initialized
+cls.predictions.* head every time it's loaded (visible as a "this checkpoint
+seem corrupted" / tied-weights warning at load time, which is NOT benign).
+Every score_cefr_candidates()/semantic_distractors() call made with that
+model was scoring against random noise, not real contextual fit. If you ever
+change model_name, first confirm the model was actually pretrained with a
+real MLM objective (BERT/RoBERTa family are safe; ELECTRA-style models are
+not), and check the load report for MISSING head weights before trusting
+any output.
 
 Every stage of the funnel (full CEFR-J vocab -> POS/level-matched pool ->
 top-K scored by the model -> candidates with a FastText vector -> tiered ->
@@ -85,10 +98,10 @@ def cosine(a, b):
 
 
 def score_cefr_candidates(stem, target_word, target_pos, target_level,
-                           allow_adjacent=True, top_n=50, model_name="microsoft/deberta-v3-large"):
+                           allow_adjacent=True, top_n=50, model_name="roberta-large"):
     """
     Score every CEFR-J word at the target POS/level (or an adjacent level)
-    for how well it fits the masked position in `stem`, using DeBERTa's own
+    for how well it fits the masked position in `stem`, using the model's own
     mask-prediction probability. Returns (candidates, pool_size) where
     candidates is the top `top_n` by lm_score and pool_size is how many
     CEFR-J words were eligible before truncating to top_n.
@@ -128,7 +141,7 @@ def score_cefr_candidates(stem, target_word, target_pos, target_level,
 
 
 def semantic_distractors(stem, target_word, target_pos=None, target_level=None,
-                          allow_adjacent=True, top_k=50, model_name="microsoft/deberta-v3-large"):
+                          allow_adjacent=True, top_k=50, model_name="roberta-large"):
     target_word = target_word.lower().strip()
     if target_pos is None or target_level is None:
         auto = cefr.entries(target_word)
@@ -142,7 +155,7 @@ def semantic_distractors(stem, target_word, target_pos=None, target_level=None,
                                               allow_adjacent=allow_adjacent, top_n=top_k,
                                               model_name=model_name)
     # top_candidates_debug: the model's own ranking, before FastText/cosine
-    # touches anything -- useful to see whether DeBERTa's contextual fit and
+    # touches anything -- useful to see whether the model's contextual fit and
     # the eventual cosine-based tiers agree or disagree.
     top_candidates_debug = [{"word": c["word"], "lm_score": c["lm_score"]} for c in filtered[:15]]
 
@@ -191,7 +204,7 @@ def semantic_distractors(stem, target_word, target_pos=None, target_level=None,
     funnel = [
         {"stage": "cefr_j_full_vocab", "count": n_full_vocab},
         {"stage": "matching_pos_and_level(±1)", "count": n_pool},
-        {"stage": "scored_by_deberta_topk", "count": len(filtered)},
+        {"stage": "scored_by_model_topk", "count": len(filtered)},
         {"stage": "has_fasttext_vector", "count": n},
         {"stage": "tiered", "counts": {k: len(v) for k, v in tiers.items()}},
         {"stage": "final_picks", "count": len(picks)},
@@ -201,10 +214,10 @@ def semantic_distractors(stem, target_word, target_pos=None, target_level=None,
         "stem": stem, "target": target_word, "target_pos": target_pos, "target_level": target_level,
         "model": model_name,
         "n_cefr_candidate_pool": n_pool,      # every CEFR-J word at this POS/level (or adjacent)
-        "n_scored_by_model": len(filtered),   # top-K of those, ranked by DeBERTa mask probability
+        "n_scored_by_model": len(filtered),   # top-K of those, ranked by the model's mask probability
         "n_with_vectors": n,                  # of those, how many had FastText vectors for tiering
         "funnel": funnel,                     # the whole pool-reduction trace, stage by stage
-        "top_candidates_debug": top_candidates_debug,  # DeBERTa's own top-15, pre-cosine
+        "top_candidates_debug": top_candidates_debug,  # the model's own top-15, pre-cosine
         "distractors": picks,
         "tiers_debug": {
             k: [{"word": c["word"], "lm_score": c["lm_score"], "cosine": round(c["cosine"], 4)} for c in v]
