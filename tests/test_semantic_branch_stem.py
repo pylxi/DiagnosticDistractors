@@ -28,6 +28,19 @@ def test_inflections_covers_hardcoded_irregular_form():
     assert "bought" in sb.inflections("buy")
 
 
+def test_inflections_covers_expanded_irregular_verbs():
+    # Spot-check the broadened IRREGULAR_FORMS table beyond the original
+    # pilot handful -- past and past-participle forms the suffix rules can't
+    # derive should all be present.
+    expected = {
+        "go": {"went", "gone"}, "eat": {"ate", "eaten"}, "make": {"made"},
+        "think": {"thought"}, "understand": {"understood"}, "pay": {"paid"},
+        "give": {"gave", "given"}, "see": {"saw", "seen"},
+    }
+    for base, forms in expected.items():
+        assert forms <= sb.inflections(base), base
+
+
 def test_inflections_y_ending_after_consonant():
     forms = sb.inflections("try")
     assert {"tries", "tried", "trying"} <= forms

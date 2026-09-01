@@ -1,17 +1,17 @@
 """
-Tests for the DeBERTa-scoring half of pipeline/semantic_branch.py:
+Tests for the masked-LM-scoring half of pipeline/semantic_branch.py:
 score_cefr_candidates() and semantic_distractors(). Unlike
 test_semantic_branch_stem.py, these DO need torch/transformers and the
-cached microsoft/deberta-v3-large weights, so they can only run in YOUR
-native venv (with network/model access) -- not in the sandboxed device_bash
-environment and not in Claude's cloud container, both of which block
-huggingface.co/pytorch.org. Every test skips itself cleanly if the model
-can't be loaded, so `pytest tests/` is always safe to run anywhere; only
-here, on your machine, do these actually execute.
+cached roberta-large weights, so they can only run in YOUR native venv (with
+network/model access) -- not in the sandboxed device_bash environment and not
+in Claude's cloud container, both of which block huggingface.co/pytorch.org.
+Every test skips itself cleanly if the model can't be loaded, so
+`pytest tests/` is always safe to run anywhere; only here, on your machine, do
+these actually execute.
 
 Two of the tests below are regression checks pinned to the real output of
 `python3 pipeline/run_batch.py` (pipeline/cache/batch_result.json, captured
-2026-08-31) rather than hand-picked expectations -- if a future change to
+2026-09-01) rather than hand-picked expectations -- if a future change to
 the model, the scoring code, or the pruned FastText vectors shifts which
 words get picked, these are the tests that will tell you. lm_score/cosine
 values are compared with a tolerance (pytest.approx) rather than exact
@@ -36,7 +36,7 @@ def model_ready():
     try:
         sb._get_model_and_tokenizer(MODEL_NAME)
     except Exception as e:
-        pytest.skip(f"DeBERTa not available in this environment ({e!r}); "
+        pytest.skip(f"roberta-large not available in this environment ({e!r}); "
                      f"these tests only run in your native venv with the model cached")
 
 
@@ -45,15 +45,28 @@ def model_ready():
 def test_score_cefr_candidates_shape(model_ready):
     stem = "Did you ___ the price?"
     candidates, pool_size = sb.score_cefr_candidates(stem, "ask", "verb", "A1", top_n=50)
-    # pool_size is tokenizer-dependent (it counts single-token CEFR-J words at
-    # this pos/level, and different models split words into subwords
-    # differently -- e.g. 344 for DeBERTa's SentencePiece vocab, 340 for
-    # RoBERTa's BPE vocab), so it is not pinned to one exact number here.
+    # pool_size counts the CEFR-J words at this pos/level that get scored. It is
+    # tokenizer-dependent (which words exist, how they split into subwords), so
+    # it is not pinned to one exact number here -- the ask/brush regression
+    # tests below pin it precisely for their specific queries.
     assert pool_size >= 50
     assert len(candidates) == 50
     for c in candidates:
         assert set(c.keys()) == {"word", "level", "pos", "lm_score"}
         assert isinstance(c["lm_score"], float)
+
+
+def test_score_cefr_candidates_scores_multi_subword_words(model_ready):
+    # Words that split into >1 subword (e.g. "frighten") used to be dropped
+    # from the pool entirely; they are now scored via a k-mask pass and appear
+    # like any other candidate, with a score on the same [0, 1] scale.
+    tokenizer, _ = sb._get_model_and_tokenizer(MODEL_NAME)
+    assert len(tokenizer.encode(" frighten", add_special_tokens=False)) > 1
+    candidates, _ = sb.score_cefr_candidates("Did you ___ the price?", "ask",
+                                             "verb", "A1", top_n=1000)
+    scored = {c["word"]: c for c in candidates}
+    assert "frighten" in scored
+    assert 0.0 <= scored["frighten"]["lm_score"] <= 1.0
 
 
 def test_score_cefr_candidates_never_includes_the_target_word(model_ready):
@@ -101,7 +114,10 @@ def test_semantic_distractors_matches_known_good_run_for_ask(model_ready):
     # captured 2026-09-01 after switching off the broken deberta-v3-large head)
     result = sb.semantic_distractors("Did you ___ the price?", "ask", target_pos="verb", target_level="A1")
 
-    assert result["n_cefr_candidate_pool"] == 340
+    # 344 = single-token pool (340) + 4 multi-subword verbs now scored rather
+    # than skipped (criticise/frighten/pollute/terrify); all 4 rank well below
+    # the top 50, so the picks below are unchanged by that addition.
+    assert result["n_cefr_candidate_pool"] == 344
     assert result["n_scored_by_model"] == 50
     assert result["n_with_vectors"] == 49
 
@@ -122,7 +138,7 @@ def test_semantic_distractors_matches_known_good_run_for_brush(model_ready):
     # captured 2026-09-01 after switching off the broken deberta-v3-large head)
     result = sb.semantic_distractors("The leaves ___ her cheek.", "brush", target_pos="verb", target_level="A1")
 
-    assert result["n_cefr_candidate_pool"] == 340
+    assert result["n_cefr_candidate_pool"] == 344  # incl. 4 multi-subword verbs (see ask test)
     assert result["n_scored_by_model"] == 50
     assert result["n_with_vectors"] == 48
 

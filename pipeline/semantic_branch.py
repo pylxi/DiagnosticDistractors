@@ -15,9 +15,12 @@ a simple word -- and every candidate is already at the learner's level, so
 we're never tempted to widen the level window to compensate (a distractor
 that's obviously too hard isn't a distractor, it's a giveaway).
 
-Multi-subword CEFR-J words are skipped for now (most short A1/A2 words are
-single tokens in the model's vocab, so this covers the bulk of cases);
-extending to multi-token scoring is a follow-up if it turns out to matter.
+Most short A1/A2 words are single tokens in the model's vocab and are scored
+by that token's fill-mask probability. Words that split into k>1 subwords are
+also scored (via a k-mask pass, length-normalized to the same [0, 1] scale) --
+see score_cefr_candidates() for the approximation and its limits. Multi-*word*
+CEFR-J entries (containing a space) are still skipped -- scoring a phrase as a
+single blank fill isn't meaningful here.
 
 IMPORTANT (2026-09-01): the default model_name below is roberta-large, not
 microsoft/deberta-v3-large. deberta-v3-large was pretrained with ELECTRA-style
@@ -105,20 +108,43 @@ def score_cefr_candidates(stem, target_word, target_pos, target_level,
     mask-prediction probability. Returns (candidates, pool_size) where
     candidates is the top `top_n` by lm_score and pool_size is how many
     CEFR-J words were eligible before truncating to top_n.
+
+    Words that tokenize to a single subword are scored by that token's
+    fill-mask probability directly. Words that tokenize to k>1 subwords (e.g.
+    "apologize" -> ["apolog", "ize"]) are scored by a k-mask pass: the blank is
+    replaced by k mask tokens and the score is the geometric mean of the k
+    per-position marginal probabilities of the word's own subwords. The
+    geometric mean is length-normalized so a single-token word's score is
+    exactly its fill-mask probability (k=1 is the identity case), keeping
+    single- and multi-token scores on one comparable [0, 1] scale. The
+    approximation treats the k positions as independent -- it ignores
+    intra-word dependence between subwords -- so multi-token scores are
+    coarser than single-token ones; good enough to stop dropping these words
+    entirely, not a substitute for true pseudo-log-likelihood scoring.
     """
     import torch
+    import math
 
     tokenizer, model = _get_model_and_tokenizer(model_name)
-    masked = stem.replace("___", tokenizer.mask_token)
-    inputs = tokenizer(masked, return_tensors="pt")
-    mask_positions = (inputs["input_ids"][0] == tokenizer.mask_token_id).nonzero(as_tuple=True)[0]
-    if len(mask_positions) == 0:
-        raise ValueError(f"no mask token found after substitution: {masked!r}")
-    mask_index = mask_positions[0].item()
 
-    with torch.no_grad():
-        logits = model(**inputs).logits[0, mask_index]
-    probs = torch.softmax(logits, dim=-1)
+    # One forward pass per distinct subword-length k, cached: replace the blank
+    # with k mask tokens and return the softmax marginals at each mask position.
+    _probs_by_k = {}
+    def mask_marginals(k):
+        if k not in _probs_by_k:
+            filled = stem.replace("___", " ".join([tokenizer.mask_token] * k))
+            enc = tokenizer(filled, return_tensors="pt")
+            positions = (enc["input_ids"][0] == tokenizer.mask_token_id).nonzero(as_tuple=True)[0]
+            if len(positions) != k:
+                _probs_by_k[k] = None  # couldn't place k masks cleanly
+            else:
+                with torch.no_grad():
+                    logits = model(**enc).logits[0]
+                _probs_by_k[k] = [torch.softmax(logits[p], dim=-1) for p in positions]
+        return _probs_by_k[k]
+
+    if mask_marginals(1) is None:
+        raise ValueError(f"no mask token found after substitution for stem: {stem!r}")
 
     candidates = []
     # Pre-filtered, cached pool for this (pos, level) instead of rescanning
@@ -127,13 +153,18 @@ def score_cefr_candidates(stem, target_word, target_pos, target_level,
                                              allow_adjacent=allow_adjacent):
         if w == target_word or not w.isalpha():
             continue
-        # Tokenize as it would appear after a space (how it actually sits
-        # in the sentence). Skip multi-subword words for now -- see module
-        # docstring.
+        # Tokenize as it would appear after a space (how it actually sits in
+        # the sentence). Multi-word CEFR entries are already excluded by the
+        # isalpha() check above; this handles single words that split into
+        # multiple subwords.
         ids = tokenizer.encode(" " + w, add_special_tokens=False)
-        if len(ids) != 1:
+        marginals = mask_marginals(len(ids))
+        if marginals is None:
             continue
-        candidates.append({"word": w, "level": level, "pos": pos, "lm_score": probs[ids[0]].item()})
+        mean_logprob = sum(math.log(max(marginals[i][t].item(), 1e-45))
+                           for i, t in enumerate(ids)) / len(ids)
+        candidates.append({"word": w, "level": level, "pos": pos,
+                           "lm_score": math.exp(mean_logprob)})
 
     candidates.sort(key=lambda c: c["lm_score"], reverse=True)
     return candidates[:top_n], len(candidates)
@@ -232,15 +263,52 @@ import re
 PILOT_CSV = os.path.join(ROOT, "data", "pilot", "sentencestudio-A1-20260831.csv")
 
 
-# Common irregular verb forms the suffix heuristic below can't derive.
-# Extend as the pilot set grows; not an attempt at full coverage.
+# Irregular past / past-participle forms the suffix heuristic below can't
+# derive (only the forms that differ from base and from a regular +ed/+s;
+# verbs whose past equals the base -- cut, put, hit, let, read -- need no
+# entry). This is still a curated table, not a morphological analyzer, but it
+# now covers the common English irregular verbs a learner corpus is likely to
+# use, not just the handful the original pilot happened to contain. British
+# variants (learnt/burnt/dreamt) are included alongside the American ones.
+#
+# Caveat: a couple of forms are homographs of other verbs' base forms (e.g.
+# "lay" is both the past of "lie" and the base of "lay"). make_stem only ever
+# searches for the *target* word's forms in the target's own sentence, so this
+# is harmless in practice, but be aware when reading a matched_surface_form.
 IRREGULAR_FORMS = {
-    "buy": {"bought"}, "catch": {"caught"}, "draw": {"drew", "drawn"},
-    "know": {"knew", "known"}, "leave": {"left"}, "learn": {"learnt"}, "meet": {"met"},
-    "ride": {"rode", "ridden"}, "run": {"ran"}, "say": {"said"},
-    "sing": {"sang", "sung"}, "sit": {"sat"}, "speak": {"spoke", "spoken"},
-    "swim": {"swam", "swum"}, "take": {"took", "taken"}, "tell": {"told"},
-    "write": {"wrote", "written"},
+    "arise": {"arose", "arisen"}, "awake": {"awoke", "awoken"},
+    "be": {"was", "were", "been"}, "bear": {"bore", "borne"},
+    "beat": {"beaten"}, "become": {"became"}, "begin": {"began", "begun"},
+    "bend": {"bent"}, "bet": {"bet"}, "bind": {"bound"}, "bite": {"bit", "bitten"},
+    "bleed": {"bled"}, "blow": {"blew", "blown"}, "break": {"broke", "broken"},
+    "bring": {"brought"}, "build": {"built"}, "burn": {"burnt"},
+    "buy": {"bought"}, "catch": {"caught"}, "choose": {"chose", "chosen"},
+    "come": {"came"}, "cost": {"cost"}, "cut": {"cut"}, "deal": {"dealt"},
+    "dig": {"dug"}, "do": {"did", "done"}, "draw": {"drew", "drawn"},
+    "dream": {"dreamt"}, "drink": {"drank", "drunk"}, "drive": {"drove", "driven"},
+    "eat": {"ate", "eaten"}, "fall": {"fell", "fallen"}, "feed": {"fed"},
+    "feel": {"felt"}, "fight": {"fought"}, "find": {"found"}, "fly": {"flew", "flown"},
+    "forget": {"forgot", "forgotten"}, "forgive": {"forgave", "forgiven"},
+    "freeze": {"froze", "frozen"}, "get": {"got", "gotten"}, "give": {"gave", "given"},
+    "go": {"went", "gone"}, "grow": {"grew", "grown"}, "hang": {"hung"},
+    "have": {"had"}, "hear": {"heard"}, "hide": {"hid", "hidden"}, "hit": {"hit"},
+    "hold": {"held"}, "hurt": {"hurt"}, "keep": {"kept"}, "know": {"knew", "known"},
+    "lay": {"laid"}, "lead": {"led"}, "learn": {"learnt"}, "leave": {"left"},
+    "lend": {"lent"}, "let": {"let"}, "lie": {"lay", "lain"}, "light": {"lit"},
+    "lose": {"lost"}, "make": {"made"}, "mean": {"meant"}, "meet": {"met"},
+    "pay": {"paid"}, "put": {"put"}, "read": {"read"}, "ride": {"rode", "ridden"},
+    "ring": {"rang", "rung"}, "rise": {"rose", "risen"}, "run": {"ran"},
+    "say": {"said"}, "see": {"saw", "seen"}, "sell": {"sold"}, "send": {"sent"},
+    "set": {"set"}, "shake": {"shook", "shaken"}, "shine": {"shone"},
+    "shoot": {"shot"}, "show": {"showed", "shown"}, "shut": {"shut"},
+    "sing": {"sang", "sung"}, "sink": {"sank", "sunk"}, "sit": {"sat"},
+    "sleep": {"slept"}, "speak": {"spoke", "spoken"}, "spend": {"spent"},
+    "spread": {"spread"}, "stand": {"stood"}, "steal": {"stole", "stolen"},
+    "stick": {"stuck"}, "swim": {"swam", "swum"}, "swing": {"swung"},
+    "take": {"took", "taken"}, "teach": {"taught"}, "tear": {"tore", "torn"},
+    "tell": {"told"}, "think": {"thought"}, "throw": {"threw", "thrown"},
+    "understand": {"understood"}, "wake": {"woke", "woken"}, "wear": {"wore", "worn"},
+    "win": {"won"}, "write": {"wrote", "written"},
 }
 
 

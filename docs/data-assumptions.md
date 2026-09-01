@@ -61,14 +61,14 @@ have-verb 4, infinitive-to 1
 
 ### Multi-word and multi-token headwords
 
-- **148 headwords contain a space** (multi-word entries). These sit in the pool
-  but the semantic branch cannot score them: it keeps only candidates that
-  encode to a *single* subword token under the MLM tokenizer
-  (`len(tokenizer.encode(" " + w)) == 1`), so both multi-word entries and
-  single words that tokenize into multiple subwords are dropped from semantic
-  scoring. This is a genuine coverage gap, tracked as the "multi-token CEFR-J
-  word scoring" backlog item — the spelling branch is unaffected (it works on
-  the surface form directly).
+- **148 headwords contain a space** (multi-word entries). The semantic branch
+  still skips these: the `isalpha()` filter drops them, since scoring a phrase
+  as a single blank fill isn't meaningful. Single words that split into
+  multiple subwords, by contrast, *are* now scored (via a k-mask pass,
+  length-normalized to the same [0, 1] scale — see `score_cefr_candidates()`),
+  so the earlier "drop every multi-token word" gap is closed for single words.
+  The spelling branch is unaffected throughout (it works on the surface form
+  directly).
 
 ## FastText vectors (`data/fasttext/pruned_cefr_j.vec`)
 
