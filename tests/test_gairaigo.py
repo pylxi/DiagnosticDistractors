@@ -62,6 +62,23 @@ def test_near_katakana_neighbors_sorted_by_distance_ascending():
     assert distances == sorted(distances)
 
 
+def test_near_neighbors_among_matches_on_the_candidates_own_reading():
+    # "draw" is written ドロー; the katakana タイ ("tie") only lists "draw" as a
+    # secondary gloss. near_katakana_neighbors_among must NOT surface draw as a
+    # neighbor of run (ラン) through that polysemy -- only words whose *primary*
+    # reading is close should appear (win via ウィン, land via ランド, ...).
+    candidates = {"draw", "drop", "enter", "cut", "win", "land", "love"}
+    got = {n["word"] for n in gairaigo.near_katakana_neighbors_among("run", candidates, max_dist=2)}
+    assert "draw" not in got and "enter" not in got and "cut" not in got
+    assert "win" in got  # ウィン, matched on its own reading
+
+
+def test_near_neighbors_among_only_returns_candidates_from_the_given_set():
+    candidates = {"win", "land"}
+    got = {n["word"] for n in gairaigo.near_katakana_neighbors_among("run", candidates, max_dist=2)}
+    assert got <= candidates
+
+
 def test_loanword_index_excludes_native_words_with_katakana_readings():
     # Regression: 刷毛 (hake, "brush") is a NATIVE word read はけ/ハケ, not a
     # gairaigo. It used to leak into the index and make brush's near-neighbor

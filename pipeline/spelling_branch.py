@@ -49,6 +49,12 @@ def spelling_distractors(word, target_pos=None, target_level=None, n=3, allow_ad
     results = []
     funnel = []
 
+    # The words that could pass the CEFR-J pos/level gate below. Restricting the
+    # gairaigo katakana search to this pool keeps it from spending its budget on
+    # obscure JMdict loanwords that aren't in the answer space anyway.
+    pool_words = {w for w, _, _ in cefr.candidate_pool(target_pos, target_level,
+                                                       allow_adjacent=allow_adjacent)}
+
     def add(raw_items, source):
         raw_items = list(raw_items)
         before = len(results)
@@ -69,7 +75,7 @@ def spelling_distractors(word, target_pos=None, target_level=None, n=3, allow_ad
             "running_total": len(results),
         })
 
-    collisions = gairaigo.exact_katakana_collisions(word)
+    collisions = gairaigo.exact_katakana_collisions(word, allowed_heads=pool_words)
     add([w for ws in collisions.values() for w in ws], "gairaigo_exact")
 
     if len(results) < n:
@@ -81,7 +87,8 @@ def spelling_distractors(word, target_pos=None, target_level=None, n=3, allow_ad
         funnel.append({"source": "phonetic_swap", "ran": False, "reason": f"quota of {n} already met"})
 
     if len(results) < n:
-        add(gairaigo.near_katakana_neighbors(word, max_dist=2, top_n=30, exclude_words=seen),
+        add(gairaigo.near_katakana_neighbors_among(word, pool_words, max_dist=2, top_n=30,
+                                                   exclude_words=seen),
             "gairaigo_near")
     else:
         funnel.append({"source": "gairaigo_near", "ran": False, "reason": f"quota of {n} already met"})
