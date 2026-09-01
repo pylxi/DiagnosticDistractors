@@ -32,13 +32,13 @@ def test_funnel_has_one_entry_per_signal_in_priority_order():
 
 
 def test_cascade_stops_once_quota_is_met():
-    # confirmed real behavior: "brush" gets its quota of 3 from
-    # gairaigo_near alone, so levenshtein must be recorded as skipped, not
-    # silently run-but-empty.
-    out = spb.spelling_distractors("brush", n=3)
+    # confirmed real behavior: "glass" reaches its quota of 3 within the
+    # gairaigo signals (grass/glasses/class ... are real katakana neighbors),
+    # so levenshtein must be recorded as skipped, not silently run-but-empty.
+    out = spb.spelling_distractors("glass", n=3)
     funnel_by_source = {f["source"]: f for f in out["funnel"]}
     assert funnel_by_source["gairaigo_near"]["ran"] is True
-    assert funnel_by_source["gairaigo_near"]["passed_cefr_gate"] >= 3
+    assert funnel_by_source["gairaigo_near"]["running_total"] >= 3
     assert funnel_by_source["levenshtein"]["ran"] is False
     assert "quota" in funnel_by_source["levenshtein"]["reason"]
 

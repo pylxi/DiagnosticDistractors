@@ -60,3 +60,18 @@ def test_near_katakana_neighbors_sorted_by_distance_ascending():
     neighbors = gairaigo.near_katakana_neighbors("glass", max_dist=2, top_n=30)
     distances = [n["distance"] for n in neighbors]
     assert distances == sorted(distances)
+
+
+def test_loanword_index_excludes_native_words_with_katakana_readings():
+    # Regression: 刷毛 (hake, "brush") is a NATIVE word read はけ/ハケ, not a
+    # gairaigo. It used to leak into the index and make brush's near-neighbor
+    # search key off the short reading "hake", flooding results with unrelated
+    # native vocab (cliff/bamboo/...). brush must now resolve only to its real
+    # katakana loanword ブラシ, and its neighbors must not include that junk.
+    romajis = {f["romaji"] for f in gairaigo.katakana_forms_for("brush",
+                                                                 include_non_eng_source=True)}
+    assert "hake" not in romajis
+    assert romajis == {"burashi"}
+
+    neighbor_words = {n["word"] for n in gairaigo.near_katakana_neighbors("brush", max_dist=2, top_n=30)}
+    assert not ({"cliff", "bamboo", "precipice", "despair"} & neighbor_words)
