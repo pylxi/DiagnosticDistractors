@@ -13,3 +13,8 @@ torch>=2.0
 transformers>=4.30
 sentencepiece>=0.1.99
 numpy>=1.24
+
+# Web app (webapp/) -- the live "type a word, get real distractors" tool,
+# not needed for the batch/CLI scripts above.
+fastapi>=0.110
+uvicorn>=0.29

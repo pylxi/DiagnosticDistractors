@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagnostic Distractors</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --bg: #f5f6f9; --surface: #ffffff; --surface-2: #eef0f5;
+  --text: #1b1f2a; --text-dim: #616b7d; --border: #dde1ea;
+  --accent: #4550c9; --accent-soft: #eceeff;
+  --good: #1f8a5f; --good-soft: #e4f5ec;
+  --warn: #9a6a08; --warn-soft: #faf1de;
+  --bad: #b23a30; --bad-soft: #fbe9e7;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12141c; --surface: #181b26; --surface-2: #1f2330;
+    --text: #e7e9f0; --text-dim: #9aa1b5; --border: #2c3040;
+    --accent: #929bff; --accent-soft: #262a45;
+    --good: #57cf9a; --good-soft: #163628;
+    --warn: #e2b258; --warn-soft: #3a2f14;
+    --bad: #ef7b70; --bad-soft: #3c211e;
+  }
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: "IBM Plex Sans", system-ui, sans-serif; line-height: 1.55; margin: 0; }
+code, .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+.wrap { max-width: 880px; margin: 0 auto; padding: 40px 24px 96px; }
+h1 { font-size: 1.7rem; font-weight: 700; margin: 0 0 6px; }
+.lede { color: var(--text-dim); margin: 0 0 28px; max-width: 62ch; }
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin-bottom: 20px; }
+.panel h2 { font-size: 1rem; font-weight: 600; margin: 0 0 14px; }
+label { display: block; font-size: 0.82rem; color: var(--text-dim); margin-bottom: 6px; font-weight: 500; }
+input[type=text], textarea, select {
+  width: 100%; font-family: inherit; font-size: 0.92rem; padding: 9px 12px;
+  border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2);
+  color: var(--text); margin-bottom: 14px;
+}
+textarea { resize: vertical; min-height: 60px; }
+.row { display: flex; gap: 14px; }
+.row > div { flex: 1; }
+button.primary {
+  font-family: inherit; font-size: 0.92rem; font-weight: 600; cursor: pointer;
+  padding: 10px 20px; border-radius: 8px; border: 1px solid var(--accent);
+  background: var(--accent); color: white;
+}
+button.primary:hover { opacity: 0.92; }
+button.primary:disabled { opacity: 0.5; cursor: default; }
+button.ghost {
+  font-family: inherit; font-size: 0.85rem; font-weight: 500; cursor: pointer;
+  padding: 8px 16px; border-radius: 8px; border: 1px solid var(--accent);
+  background: var(--accent-soft); color: var(--accent);
+}
+.error-box {
+  background: var(--bad-soft); color: var(--bad); border-radius: 10px;
+  padding: 12px 16px; font-size: 0.88rem; margin-bottom: 16px; display: none;
+}
+.kv-row { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px dashed var(--border); font-size: 0.86rem; }
+.kv-row:last-child { border-bottom: none; }
+.kv-row .k { color: var(--text-dim); }
+.kv-row .v { font-family: "IBM Plex Mono", monospace; font-weight: 500; text-align: right; }
+.tier-group { margin-bottom: 14px; }
+.tier-group:last-child { margin-bottom: 0; }
+.tier-title { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+.cand-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.cand {
+  display: inline-flex; align-items: center; gap: 6px; font-family: "IBM Plex Mono", monospace;
+  font-size: 0.82rem; padding: 6px 10px; border-radius: 6px; background: var(--surface-2);
+  border: 1px solid var(--border); cursor: pointer; user-select: none;
+}
+.cand input { margin: 0; }
+.cand .sub { opacity: 0.6; font-size: 0.72em; }
+#results { display: none; }
+.export-row { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
+.export-count { font-size: 0.85rem; color: var(--text-dim); }
+.hint { font-size: 0.8rem; color: var(--text-dim); margin: -8px 0 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Diagnostic Distractors</h1>
+  <p class="lede">Type a target word and the sentence it appears in. Both branches run for real (spelling/phonetic + DeBERTa-scored semantic), and every candidate below is a checkbox — review the auto-picks, add or drop anything, then export.</p>
+
+  <div class="panel">
+    <h2>Input</h2>
+    <div class="row">
+      <div>
+        <label for="word">Target word</label>
+        <input type="text" id="word" placeholder="e.g. ask">
+      </div>
+      <div>
+        <label for="pos">Part of speech <span class="hint" style="margin:0;">(optional — auto-detected)</span></label>
+        <select id="pos">
+          <option value="">auto</option>
+          <option value="verb">verb</option>
+          <option value="noun">noun</option>
+          <option value="adjective">adjective</option>
+          <option value="adverb">adverb</option>
+        </select>
+      </div>
+      <div>
+        <label for="level">CEFR level <span class="hint" style="margin:0;">(optional — auto-detected)</span></label>
+        <select id="level">
+          <option value="">auto</option>
+          <option>A1</option><option>A2</option><option>B1</option>
+          <option>B2</option><option>C1</option><option>C2</option>
+        </select>
+      </div>
+    </div>
+    <label for="sentence">Sentence</label>
+    <textarea id="sentence" placeholder="e.g. Did you ask the price?"></textarea>
+    <button class="primary" id="generate-btn">Generate</button>
+    <div class="error-box" id="error-box"></div>
+  </div>
+
+  <div id="results">
+    <div class="panel">
+      <h2>Sentence &amp; stem</h2>
+      <div class="kv-row"><span class="k">word</span><span class="v" id="r-word"></span></div>
+      <div class="kv-row"><span class="k">level / pos</span><span class="v" id="r-level"></span></div>
+      <div class="kv-row"><span class="k">stem — matched "<span id="r-matched"></span>"</span><span class="v" id="r-stem"></span></div>
+    </div>
+
+    <div class="panel">
+      <h2>Spelling branch — signal cascade</h2>
+      <div id="sp-funnel"></div>
+    </div>
+    <div class="panel">
+      <h2>Spelling branch — candidates <span class="hint" style="display:inline;margin:0;">(check the ones to keep)</span></h2>
+      <div class="cand-list" id="sp-candidates"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Semantic branch — pool reduction</h2>
+      <div id="sem-funnel"></div>
+    </div>
+    <div class="panel">
+      <h2>Semantic branch — candidates by tier <span class="hint" style="display:inline;margin:0;">(check the ones to keep)</span></h2>
+      <div id="sem-tiers"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Export</h2>
+      <div class="export-row">
+        <button class="ghost" id="export-btn">Download selected as .tsv</button>
+        <span class="export-count" id="export-count">0 selected</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let CURRENT = null; // last successful /api/generate response, for export
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function kvRow(k, v) {
+  return `<div class="kv-row"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(v)}</span></div>`;
+}
+function candChip(word, sub, checked, dataAttrs) {
+  const attrs = Object.entries(dataAttrs).map(([k, v]) => `data-${k}="${escapeHtml(String(v))}"`).join(' ');
+  return `<label class="cand"><input type="checkbox" ${checked ? 'checked' : ''} ${attrs}>${escapeHtml(word)}${sub ? ` <span class="sub">${escapeHtml(sub)}</span>` : ''}</label>`;
+}
+
+async function generate() {
+  const word = document.getElementById('word').value.trim();
+  const sentence = document.getElementById('sentence').value.trim();
+  const pos = document.getElementById('pos').value;
+  const level = document.getElementById('level').value;
+  const errorBox = document.getElementById('error-box');
+  const btn = document.getElementById('generate-btn');
+
+  errorBox.style.display = 'none';
+  document.getElementById('results').style.display = 'none';
+
+  if (!word || !sentence) {
+    errorBox.textContent = 'Enter both a word and a sentence.';
+    errorBox.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Generating…';
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ word, sentence, pos: pos || null, level: level || null }),
+    });
+    const body = await res.json();
+    if (!res.ok) {
+      errorBox.textContent = body.detail || 'Something went wrong.';
+      errorBox.style.display = 'block';
+      return;
+    }
+    CURRENT = body;
+    render(body);
+  } catch (e) {
+    errorBox.textContent = 'Could not reach the server — is it still running?';
+    errorBox.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Generate';
+  }
+}
+
+function render(d) {
+  document.getElementById('r-word').textContent = d.word;
+  document.getElementById('r-level').textContent = d.level + ' / ' + d.pos + (d.in_cefr_j ? '' : ' (not in CEFR-J — level/POS entered manually)');
+  document.getElementById('r-stem').textContent = d.stem;
+  document.getElementById('r-matched').textContent = d.matched_surface_form;
+
+  const sp = d.spelling;
+  if (sp.error) {
+    document.getElementById('sp-funnel').innerHTML = kvRow('error', sp.error);
+    document.getElementById('sp-candidates').innerHTML = '';
+  } else {
+    document.getElementById('sp-funnel').innerHTML = sp.funnel.map(f =>
+      f.ran
+        ? kvRow(f.source, `${f.raw_candidates} raw → ${f.passed_cefr_gate} passed CEFR gate → running total ${f.running_total}`)
+        : kvRow(f.source, `skipped — ${f.reason}`)
+    ).join('');
+    const autoPicked = new Set(sp.distractors.map(p => p.word));
+    document.getElementById('sp-candidates').innerHTML = sp.all_found.length
+      ? sp.all_found.map(p => candChip(p.word, `${p.source} · ${p.level}`, autoPicked.has(p.word), {
+          branch: 'spelling', word: p.word, source: p.source, level: p.level,
+        })).join('')
+      : '<span class="hint" style="margin:0;">No spelling-branch candidates found for this word.</span>';
+  }
+
+  const sem = d.semantic;
+  if (sem.error) {
+    document.getElementById('sem-funnel').innerHTML = kvRow('error', sem.error);
+    document.getElementById('sem-tiers').innerHTML = '';
+  } else {
+    document.getElementById('sem-funnel').innerHTML = [
+      kvRow('CEFR-J candidate pool (matching pos/level ±1)', sem.n_cefr_candidate_pool),
+      kvRow('→ scored by DeBERTa, top-k kept', sem.n_scored_by_model),
+      kvRow('→ has a FastText vector', sem.n_with_vectors),
+    ].join('');
+
+    const autoPicks = new Set(Object.values(sem.distractors).map(p => p.word));
+    const tierOrder = ['near_miss', 'thematic', 'unclassified', 'discard', 'control'];
+    const tierLabel = { near_miss: 'near miss', thematic: 'thematic', unclassified: 'unclassified (70–95th pct)', discard: 'discard (too close — top 10%)', control: 'control (unrelated — bottom 5%)' };
+    let hasAny = false;
+    document.getElementById('sem-tiers').innerHTML = tierOrder.map(t => {
+      const list = sem.tiers_debug[t] || [];
+      if (!list.length) return '';
+      hasAny = true;
+      return `<div class="tier-group"><div class="tier-title">${escapeHtml(tierLabel[t])} (${list.length})</div><div class="cand-list">` +
+        list.map(c => candChip(c.word, `cos ${c.cosine.toFixed(3)}`, autoPicks.has(c.word), {
+          branch: 'semantic', word: c.word, tier: t, cosine: c.cosine,
+        })).join('') +
+        '</div></div>';
+    }).join('');
+    if (!hasAny) {
+      document.getElementById('sem-tiers').innerHTML = '<span class="hint" style="margin:0;">No semantic candidates — this target word may not have a FastText vector.</span>';
+    }
+  }
+
+  document.getElementById('results').style.display = 'block';
+  updateExportCount();
+}
+
+function updateExportCount() {
+  const n = document.querySelectorAll('#results input[type=checkbox]:checked').length;
+  document.getElementById('export-count').textContent = n + ' selected';
+}
+
+function exportSelected() {
+  if (!CURRENT) return;
+  const boxes = document.querySelectorAll('#results input[type=checkbox]:checked');
+  if (!boxes.length) return;
+  const rows = [['target', 'sentence', 'stem', 'branch', 'tier_or_source', 'distractor', 'cosine_or_level']];
+  boxes.forEach(b => {
+    const ds = b.dataset;
+    rows.push([
+      CURRENT.word, CURRENT.sentence, CURRENT.stem, ds.branch,
+      ds.branch === 'spelling' ? ds.source : ds.tier,
+      ds.word,
+      ds.branch === 'spelling' ? ds.level : Number(ds.cosine).toFixed(3),
+    ]);
+  });
+  const tsv = rows.map(r => r.join('\t')).join('\n');
+  const blob = new Blob([tsv], { type: 'text/tab-separated-values' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `distractors_${CURRENT.word}.tsv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById('generate-btn').addEventListener('click', generate);
+document.getElementById('export-btn').addEventListener('click', exportSelected);
+document.getElementById('results').addEventListener('change', (e) => {
+  if (e.target.matches('input[type=checkbox]')) updateExportCount();
+});
+document.getElementById('sentence').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) generate();
+});
+</script>
+</body>
+</html>
