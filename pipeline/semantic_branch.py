@@ -121,12 +121,11 @@ def score_cefr_candidates(stem, target_word, target_pos, target_level,
     probs = torch.softmax(logits, dim=-1)
 
     candidates = []
-    for w in cefr.all_words():
+    # Pre-filtered, cached pool for this (pos, level) instead of rescanning
+    # the whole CEFR-J vocabulary on every request (see cefr.candidate_pool).
+    for w, level, pos in cefr.candidate_pool(target_pos, target_level,
+                                             allow_adjacent=allow_adjacent):
         if w == target_word or not w.isalpha():
-            continue
-        ok, level, pos = cefr.matches(w, target_pos=target_pos, target_level=target_level,
-                                       allow_adjacent=allow_adjacent)
-        if not ok:
             continue
         # Tokenize as it would appear after a space (how it actually sits
         # in the sentence). Skip multi-subword words for now -- see module

@@ -4,6 +4,7 @@ Exact-level match first, ±1 adjacent-level fallback when the caller asks for it
 """
 import csv
 import os
+from functools import lru_cache
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"]
@@ -50,6 +51,33 @@ def all_words():
 def adjacent_levels(level, radius=1):
     i = LEVEL_INDEX[level]
     return [LEVELS[j] for j in range(max(0, i - radius), min(len(LEVELS), i + radius + 1))]
+
+@lru_cache(maxsize=None)
+def candidate_pool(target_pos=None, target_level=None, allow_adjacent=True):
+    """
+    The CEFR-J headwords eligible under `matches()` for this (pos, level)
+    query, as a tuple of (word, matched_level, matched_pos) triples.
+
+    This is exactly the accepted subset the branches used to rebuild by
+    walking `all_words()` and calling `matches()` on every headword on every
+    request. Here it's computed once per distinct
+    (target_pos, target_level, allow_adjacent) and cached, so the semantic
+    branch's per-request pool scan and the Levenshtein branch's per-request
+    distance sweep both iterate a small pre-filtered pool instead of the full
+    vocabulary -- which matters now that the web app runs the whole pipeline
+    once per user click. Iteration order matches `_lookup` insertion order
+    (i.e. `all_words()`), so callers that sort with ties resolve them
+    identically to the pre-cache behavior.
+    """
+    _load()
+    pool = []
+    for word in _lookup:
+        ok, level, pos = matches(word, target_pos=target_pos,
+                                 target_level=target_level,
+                                 allow_adjacent=allow_adjacent)
+        if ok:
+            pool.append((word, level, pos))
+    return tuple(pool)
 
 def matches(word, target_pos=None, target_level=None, allow_adjacent=True):
     """
