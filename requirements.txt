@@ -1,3 +1,10 @@
+# These are the same dependencies declared in pyproject.toml, kept here for
+# `pip install -r requirements.txt`. The packaged equivalents are:
+#   pip install -e .              (core)
+#   pip install -e ".[semantic]"  (+ ML)
+#   pip install -e ".[web]"       (+ web app)
+#   pip install -e ".[all]"       (everything)
+
 # Core — no ML, works in any lightweight Python 3.9+ environment.
 # Needed by: cefr_lookup, gairaigo, phonetic_swaps, levenshtein_search,
 # spelling_branch, build_loanword_index, step1_load_data.
@@ -7,8 +14,8 @@ python-Levenshtein>=0.21
 pykakasi>=2.2
 
 # Semantic branch only — needs network access on first run (downloads
-# microsoft/deberta-v3-large) and real RAM/disk, so run this from a normal
-# desktop/laptop Python environment, not a constrained sandbox.
+# roberta-large) and real RAM/disk, so run this from a normal desktop/laptop
+# Python environment, not a constrained sandbox.
 torch>=2.0
 transformers>=4.30
 sentencepiece>=0.1.99

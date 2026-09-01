@@ -22,8 +22,8 @@ should be perfectly reproducible for the same model/data.
 """
 import pytest
 
-import cefr_lookup as cefr
-import semantic_branch as sb
+from pipeline import cefr_lookup as cefr
+from pipeline import semantic_branch as sb
 
 MODEL_NAME = "roberta-large"
 

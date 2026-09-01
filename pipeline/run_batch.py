@@ -9,17 +9,15 @@ spelling branch has no such requirement but is run here too so everything
 lands in one file.
 
 Usage (from the DiagnosticDistractors folder, with your venv active):
-    python3 pipeline/run_batch.py
+    python3 -m pipeline.run_batch
 
 Writes: pipeline/cache/batch_result.json
 """
 import json
 import os
-import sys
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import spelling_branch
-import semantic_branch
+from pipeline import spelling_branch
+from pipeline import semantic_branch
 
 OUT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache", "batch_result.json")
 

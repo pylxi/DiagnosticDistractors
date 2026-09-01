@@ -4,7 +4,7 @@ candidate from both branches has to clear. Run against the real CEFR-J
 wordlist (data/CEFR-J/), not a fixture -- these are the real level/POS
 assignments the pipeline actually uses.
 """
-import cefr_lookup as cefr
+from pipeline import cefr_lookup as cefr
 
 
 def test_entries_known_word_returns_pos_level_pairs():

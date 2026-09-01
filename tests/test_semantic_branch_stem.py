@@ -8,7 +8,7 @@ with no venv, network, or model download required.
 """
 import math
 
-import semantic_branch as sb
+from pipeline import semantic_branch as sb
 
 
 # ---- inflections() ----------------------------------------------------

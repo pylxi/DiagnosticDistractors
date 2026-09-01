@@ -18,19 +18,15 @@ Run from the repo root:
 Then open http://127.0.0.1:8000/
 """
 import os
-import sys
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(ROOT, "pipeline"))
-
-import cefr_lookup as cefr        # noqa: E402
-import spelling_branch            # noqa: E402
-import semantic_branch            # noqa: E402
+from pipeline import cefr_lookup as cefr
+from pipeline import spelling_branch
+from pipeline import semantic_branch
 
 app = FastAPI(title="Diagnostic Distractors")
 

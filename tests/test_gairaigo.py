@@ -4,7 +4,7 @@ loanword lookups, built on the real pipeline/cache/loanwords.json (built
 from JMdict by build_loanword_index.py). Run build_loanword_index.py first
 if that cache file doesn't exist yet.
 """
-import gairaigo
+from pipeline import gairaigo
 
 
 def test_exact_katakana_collisions_bus_finds_bath_and_bass():

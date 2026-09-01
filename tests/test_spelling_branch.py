@@ -5,7 +5,7 @@ against real CEFR-J/JMdict data. Pure Python, no model/network needed.
 """
 import pytest
 
-import spelling_branch as spb
+from pipeline import spelling_branch as spb
 
 
 def test_result_shape():
@@ -49,7 +49,7 @@ def test_sufficient_flag_matches_all_found_length():
 
 
 def test_every_candidate_passes_the_cefr_gate_it_claims():
-    import cefr_lookup as cefr
+    from pipeline import cefr_lookup as cefr
     out = spb.spelling_distractors("ask", n=8)
     for cand in out["all_found"]:
         ok, level, pos = cefr.matches(

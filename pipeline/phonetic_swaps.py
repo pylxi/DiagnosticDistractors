@@ -10,11 +10,7 @@ Each rule is (from_substring, to_substring). For every occurrence of
 `from_substring` in the target word, we try substituting just that
 occurrence and keep the result only if it's a *different*, real CEFR-J word.
 """
-import os
-import sys
-
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import cefr_lookup as cefr
+from pipeline import cefr_lookup as cefr
 
 RULES = [
     ("l", "r"), ("r", "l"),           # light/right

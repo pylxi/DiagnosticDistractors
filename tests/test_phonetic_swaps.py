@@ -2,7 +2,7 @@
 Tests for pipeline/phonetic_swaps.py -- the L/R, B/V, TH->S/Z, F/H
 substitution-rule signal in the spelling branch.
 """
-import phonetic_swaps as ps
+from pipeline import phonetic_swaps as ps
 
 
 def test_candidates_light_matches_known_rule_hits():

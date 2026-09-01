@@ -2,7 +2,7 @@
 Tests for pipeline/levenshtein_search.py -- the plain English-spelling
 edit-distance fallback signal (bottom of the spelling branch's cascade).
 """
-import levenshtein_search as lev
+from pipeline import levenshtein_search as lev
 
 
 def test_neighbors_ask_finds_known_close_words():

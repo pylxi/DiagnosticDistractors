@@ -56,10 +56,8 @@ the pipeline (running elsewhere) can pick them up.
 import json
 import math
 import os
-import sys
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import cefr_lookup as cefr
+from pipeline import cefr_lookup as cefr
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VEC_PATH = os.path.join(ROOT, "data", "fasttext", "pruned_cefr_j.vec")

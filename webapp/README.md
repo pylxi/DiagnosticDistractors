@@ -19,7 +19,7 @@ and in `pipeline/`.
 ```bash
 cd ~/Documents/DiagnosticDistractors
 source venv/bin/activate
-pip install -r requirements.txt      # fastapi/uvicorn are in there now
+pip install -e ".[semantic,web]"     # pipeline package + model + fastapi/uvicorn
 uvicorn webapp.app:app --reload --port 8000
 ```
 

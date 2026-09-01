@@ -41,7 +41,9 @@ data, not a mockup):
 
 ```
 DiagnosticDistractors/
-├── pipeline/                   # all pipeline code
+├── pyproject.toml              # packaging + deps (install with `pip install -e .`)
+├── pipeline/                   # all pipeline code (installable package `pipeline`)
+│   ├── __init__.py             # package marker
 │   ├── cefr_lookup.py          # CEFR-J word/POS/level lookup (used by both branches)
 │   ├── gairaigo.py             # katakana loanword collision + near-neighbor lookup
 │   ├── phonetic_swaps.py       # L/R, B/V, TH->S/Z, F/H substitution rules
@@ -60,40 +62,57 @@ DiagnosticDistractors/
 │   └── wordnet_ewn/              # external, not yet wired into either branch (gitignored)
 ├── experiments/                 # ad-hoc scratch output, not part of the pipeline (gitignored)
 ├── webapp/                      # live web app -- type a word+sentence, review, export (see webapp/README.md)
+├── docs/                        # design notes (scoring objectives, data assumptions)
+├── scripts/debug/               # one-off incident diagnostics (see scripts/debug/README.md)
+├── tests/                       # pytest suite (`python3 -m pytest tests/`)
 └── requirements.txt
 ```
 
 ## Setup
 
-The spelling branch and all the lookup/data-loading code need nothing beyond
-`requirements.txt` and run fine in a lightweight environment. **The semantic
-branch needs a real machine with network access**: it downloads its model
-(`roberta-large` by default) on first use and needs enough RAM/disk to run
-it. Run it from a normal desktop/laptop Python environment (a venv is
-enough), not a constrained sandbox.
+The project installs as a package (`pipeline`) via `pyproject.toml`. The
+spelling branch and all the lookup/data-loading code run fine in a lightweight
+environment (the core install). **The semantic branch needs a real machine
+with network access**: it downloads its model (`roberta-large` by default) on
+first use and needs enough RAM/disk to run it. Run it from a normal
+desktop/laptop Python environment (a venv is enough), not a constrained
+sandbox.
 
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip install -e ".[all]"            # everything: spelling + semantic + web + tests
 ```
 
+Lighter installs are available via extras when you don't need the whole thing:
+
+```bash
+pip install -e .                   # core only — spelling branch + data tooling
+pip install -e ".[semantic]"       # + the masked-LM semantic branch (torch/transformers)
+pip install -e ".[web]"            # + the FastAPI web app
+```
+
+(`pip install -r requirements.txt` still works and installs the full set.)
+
 ## Running it
+
+Modules are run with `python3 -m pipeline.<name>` (from the repo root, venv
+active) now that the pipeline is a package:
 
 ```bash
 # Confirm every data source loads (run this first after setup, or after
 # moving/updating any data file)
-python3 pipeline/step1_load_data.py
+python3 -m pipeline.step1_load_data
 
 # Build the loanword index from JMdict (run once, or whenever JMdict updates)
-python3 pipeline/build_loanword_index.py
+python3 -m pipeline.build_loanword_index
 
 # Spelling branch — no network/model needed
-python3 pipeline/spelling_branch.py glass light bus collar quiet
+python3 -m pipeline.spelling_branch glass light bus collar quiet
 
-# Semantic branch — needs the venv above with torch/transformers, and network
-# access the first time (to download the model)
-python3 pipeline/semantic_branch.py
+# Semantic branch — needs the [semantic] extra (torch/transformers), and
+# network access the first time (to download the model)
+python3 -m pipeline.semantic_branch
 ```
 
 `semantic_branch.py` currently runs against a 3-word sample of the pilot CSV

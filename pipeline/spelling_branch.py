@@ -20,14 +20,12 @@ deliberately left out here -- see the note printed by --explain. The static
 second semantic signal, not an orthographic one; it would blur exactly the
 distinction this branch exists to keep clean.
 """
-import os
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import cefr_lookup as cefr
-import gairaigo
-import phonetic_swaps
-import levenshtein_search
+from pipeline import cefr_lookup as cefr
+from pipeline import gairaigo
+from pipeline import phonetic_swaps
+from pipeline import levenshtein_search
 
 FASTTEXT_NOTE = (
     "Note: skipping a FastText 'visual neighbor' fallback on purpose. "

@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "diagnostic-distractors"
+version = "0.1.0"
+description = "Distractor generator for English vocabulary diagnostic tests aimed at Japanese CEFR-J learners"
+readme = "README.md"
+requires-python = ">=3.9"
+
+# Core -- no ML, works in any lightweight Python environment. Enough to run
+# the whole spelling/phonetic branch and all the lookup/data-loading code.
+dependencies = [
+    "lxml>=4.9",
+    "PyYAML>=6.0",
+    "python-Levenshtein>=0.21",
+    "pykakasi>=2.2",
+]
+
+[project.optional-dependencies]
+# Semantic branch -- downloads roberta-large on first run; needs real RAM/disk.
+semantic = [
+    "torch>=2.0",
+    "transformers>=4.30",
+    "sentencepiece>=0.1.99",
+    "numpy>=1.24",
+]
+# Live web app (webapp/).
+web = [
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+]
+# Test suite.
+dev = [
+    "pytest>=7.0",
+]
+# Everything, for a full desktop install.
+all = [
+    "diagnostic-distractors[semantic,web,dev]",
+]
+
+[tool.setuptools]
+# Only the pipeline package is installed; webapp/ is run in place from the
+# repo root (uvicorn webapp.app:app), and data/ is external (see README).
+packages = ["pipeline"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Put the repo root on sys.path so `from pipeline import ...` resolves during
+# tests without requiring an editable install (though `pip install -e .` also
+# works and is what non-test callers use).
+pythonpath = ["."]

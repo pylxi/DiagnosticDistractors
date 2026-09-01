@@ -4,13 +4,9 @@ Complements gairaigo.py (loanword/katakana confusions) and phonetic_swaps.py
 (rule-based sound substitutions) by catching plain "looks similar on the
 page" neighbors those two miss -- e.g. quiet/quite, though/through, form/from.
 """
-import os
-import sys
-
 import Levenshtein
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import cefr_lookup as cefr
+from pipeline import cefr_lookup as cefr
 
 def neighbors(word, target_pos=None, target_level=None, allow_adjacent=True,
               max_dist=3, top_n=15, exclude=None):
