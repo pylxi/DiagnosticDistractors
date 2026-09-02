@@ -68,14 +68,24 @@ def test_near_neighbors_among_matches_on_the_candidates_own_reading():
     # neighbor of run (ラン) through that polysemy -- only words whose *primary*
     # reading is close should appear (win via ウィン, land via ランド, ...).
     candidates = {"draw", "drop", "enter", "cut", "win", "land", "love"}
-    got = {n["word"] for n in gairaigo.near_katakana_neighbors_among("run", candidates, max_dist=2)}
+    got = {n["word"] for n in gairaigo.near_katakana_neighbors_among("run", candidates)}
     assert "draw" not in got and "enter" not in got and "cut" not in got
     assert "win" in got  # ウィン, matched on its own reading
 
 
+def test_near_neighbors_among_ranks_by_mora_distance_not_gloss_polysemy():
+    # "fall" is written ダウン (da-u-n) -- a genuine but distant reading from run
+    # (ラン); the mora metric must rank it below same-row vowel look-alikes and,
+    # at the default threshold, drop it entirely.
+    candidates = {"fall", "ring", "turn", "win", "land"}
+    got = {n["word"] for n in gairaigo.near_katakana_neighbors_among("run", candidates)}
+    assert "fall" not in got
+    assert {"ring", "turn"} <= got
+
+
 def test_near_neighbors_among_only_returns_candidates_from_the_given_set():
     candidates = {"win", "land"}
-    got = {n["word"] for n in gairaigo.near_katakana_neighbors_among("run", candidates, max_dist=2)}
+    got = {n["word"] for n in gairaigo.near_katakana_neighbors_among("run", candidates)}
     assert got <= candidates
 
 

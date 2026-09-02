@@ -17,6 +17,8 @@ from collections import defaultdict
 
 import Levenshtein
 
+from pipeline import kana_distance
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INDEX_PATH = os.path.join(ROOT, "pipeline", "cache", "loanwords.json")
 
@@ -110,21 +112,27 @@ def near_katakana_neighbors(word, max_dist=2, top_n=15, exclude_words=None):
             break
     return out
 
-def near_katakana_neighbors_among(word, candidate_words, max_dist=2, top_n=15, exclude_words=None):
+def near_katakana_neighbors_among(word, candidate_words, max_dist=1.0, top_n=15, exclude_words=None):
     """Among `candidate_words`, the ones whose OWN katakana loanword reading is
-    within `max_dist` romaji edits of `word`'s reading.
+    within `max_dist` of `word`'s reading under the mora-aware distance
+    (see kana_distance.mora_distance) -- so long/short-vowel and same-kana-row
+    vowel swaps rank above genuine consonant differences, matching how a
+    Japanese learner actually mishears the word.
 
-    Unlike near_katakana_neighbors, each candidate is matched on the reading
-    used to write *that* word, so it won't surface a word merely because some
-    unrelated katakana form shares a JMdict gloss with it -- "draw" is written
-    ドロー, not タイ, so it is not a neighbor of run (ラン) even though the
-    katakana タイ ("tie") happens to gloss to "draw". This is the precise search
-    for building distractors over a fixed candidate set (e.g. the CEFR-J pool).
+    Two guards keep this precise:
+    - each candidate is matched on the reading for which it is the PRIMARY gloss
+      (the katakana is actually how *that* word is written) -- so "draw" (ドロー)
+      is not surfaced as a neighbor of run (ラン) just because タイ ("tie") lists
+      "draw" as a secondary gloss;
+    - exact reading matches (distance 0) are left to exact_katakana_collisions.
+
+    This is the precise search for building distractors over a fixed candidate
+    set (e.g. the CEFR-J pool).
     """
     _load()
     exclude_words = {word.lower()} | {w.lower() for w in (exclude_words or set())}
-    target_romajis = {f["romaji"] for f in katakana_forms_for(word, include_non_eng_source=False)}
-    if not target_romajis:
+    target_kata = {f["katakana"] for f in katakana_forms_for(word, include_non_eng_source=False)}
+    if not target_kata:
         return []
     scored = []
     for cand in candidate_words:
@@ -133,15 +141,11 @@ def near_katakana_neighbors_among(word, candidate_words, max_dist=2, top_n=15, e
             continue
         best = None  # (dist, katakana, romaji) for this candidate's closest form
         for f in katakana_forms_for(c, include_non_eng_source=True):
-            # Only match on a form for which `c` is the PRIMARY gloss, i.e. the
-            # katakana is actually how `c` is written -- not a form that merely
-            # lists `c` as a secondary/polysemous gloss (タイ glosses to "draw"
-            # via the sports sense of "tie", but draw is written ドロー).
             if _primary_head(f) != c:
                 continue
-            dist = min(Levenshtein.distance(tr, f["romaji"]) for tr in target_romajis)
+            dist = min(kana_distance.mora_distance(tk, f["katakana"]) for tk in target_kata)
             if 0 < dist <= max_dist and (best is None or dist < best[0]):
-                best = (dist, f["katakana"], f["romaji"])
+                best = (round(dist, 3), f["katakana"], f["romaji"])
         if best:
             scored.append({"word": c, "distance": best[0], "katakana": best[1], "romaji": best[2]})
     scored.sort(key=lambda r: (r["distance"], r["word"]))

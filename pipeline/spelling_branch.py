@@ -6,7 +6,7 @@ through the CEFR-J POS/level check before it counts toward the quota.
 Priority:
   1. gairaigo_exact   -- identical katakana reading (bus/bath, light/right)
   2. phonetic_swap    -- L/R, B/V, TH->S/Z, F/H substitution on the spelling
-  3. gairaigo_near     -- romaji edit-distance <=2 to a different loanword
+  3. gairaigo_near     -- mora-aware katakana distance to a CEFR-J loanword
   4. levenshtein       -- plain English-spelling edit distance over CEFR-J
 
 Each signal only runs if the quota (`n`) isn't already met by higher-priority
@@ -87,7 +87,7 @@ def spelling_distractors(word, target_pos=None, target_level=None, n=3, allow_ad
         funnel.append({"source": "phonetic_swap", "ran": False, "reason": f"quota of {n} already met"})
 
     if len(results) < n:
-        add(gairaigo.near_katakana_neighbors_among(word, pool_words, max_dist=2, top_n=30,
+        add(gairaigo.near_katakana_neighbors_among(word, pool_words, top_n=30,
                                                    exclude_words=seen),
             "gairaigo_near")
     else:
