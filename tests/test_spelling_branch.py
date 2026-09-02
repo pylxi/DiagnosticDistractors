@@ -43,6 +43,14 @@ def test_cascade_stops_once_quota_is_met():
     assert "quota" in funnel_by_source["levenshtein"]["reason"]
 
 
+def test_no_multi_word_candidates():
+    # Multi-word CEFR-J entries (e.g. "all right") are not plausible look-alike
+    # distractors for a single spelled target and must be filtered out.
+    for w in ("light", "run", "glass"):
+        out = spb.spelling_distractors(w, n=8)
+        assert not [c for c in out["all_found"] if " " in c["word"]]
+
+
 def test_sufficient_flag_matches_all_found_length():
     out = spb.spelling_distractors("ask", n=3)
     assert out["sufficient"] == (len(out["all_found"]) >= 3)

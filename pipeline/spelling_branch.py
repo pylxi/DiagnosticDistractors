@@ -62,6 +62,12 @@ def spelling_distractors(word, target_pos=None, target_level=None, n=3, allow_ad
             cand = (item if isinstance(item, str) else item["word"]).lower().strip()
             if not cand or cand in seen:
                 continue
+            if " " in cand:
+                # Skip multi-word CEFR-J entries (e.g. "all right"): a single
+                # spelled word is the target, so a phrase isn't a plausible
+                # look-alike distractor. (The semantic branch already excludes
+                # these via its isalpha() check.)
+                continue
             ok, level, pos = cefr.matches(cand, target_pos=target_pos,
                                            target_level=target_level,
                                            allow_adjacent=allow_adjacent)
