@@ -83,6 +83,16 @@ def test_near_neighbors_among_ranks_by_mora_distance_not_gloss_polysemy():
     assert {"ring", "turn"} <= got
 
 
+def test_near_neighbors_among_falls_back_to_transliteration_for_non_loanwords():
+    # "add" has no JMdict katakana form (it isn't a Japanese loanword), so it
+    # used to get no gairaigo signal at all. With the transliteration fallback
+    # (add -> アド) it now finds katakana look-alikes among the candidates.
+    assert gairaigo.katakana_forms_for("add", include_non_eng_source=True) == []
+    got = gairaigo.near_katakana_neighbors_among(
+        "add", {"read", "need", "hide", "order", "jump"}, top_n=10)
+    assert len(got) >= 2  # e.g. read/need/hide, matched via transliteration
+
+
 def test_near_neighbors_among_only_returns_candidates_from_the_given_set():
     candidates = {"win", "land"}
     got = {n["word"] for n in gairaigo.near_katakana_neighbors_among("run", candidates)}

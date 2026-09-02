@@ -18,6 +18,7 @@ from collections import defaultdict
 import Levenshtein
 
 from pipeline import kana_distance
+from pipeline import eng_to_katakana
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INDEX_PATH = os.path.join(ROOT, "pipeline", "cache", "loanwords.json")
@@ -126,6 +127,12 @@ def near_katakana_neighbors_among(word, candidate_words, max_dist=1.0, top_n=15,
       "draw" as a secondary gloss;
     - exact reading matches (distance 0) are left to exact_katakana_collisions.
 
+    Words that have no JMdict katakana form at all (about 47% of CEFR-J -- e.g.
+    "ask", which Japanese doesn't borrow as a loanword) fall back to a
+    rule-based transliteration (eng_to_katakana), so the signal still works for
+    them: ask -> アスク, and its neighbours (task/mask/... -> タスク/マスク) are
+    found by the same mora distance.
+
     This is the precise search for building distractors over a fixed candidate
     set (e.g. the CEFR-J pool).
     """
@@ -133,19 +140,27 @@ def near_katakana_neighbors_among(word, candidate_words, max_dist=1.0, top_n=15,
     exclude_words = {word.lower()} | {w.lower() for w in (exclude_words or set())}
     target_kata = {f["katakana"] for f in katakana_forms_for(word, include_non_eng_source=False)}
     if not target_kata:
+        fallback = eng_to_katakana.to_katakana(word)
+        target_kata = {fallback} if fallback else set()
+    if not target_kata:
         return []
     scored = []
     for cand in candidate_words:
         c = cand.lower().strip()
         if c in exclude_words:
             continue
+        # candidate readings: JMdict primary-gloss forms, or a transliteration
+        # fallback if the word isn't a loanword in JMdict.
+        forms = [(f["katakana"], f["romaji"]) for f in katakana_forms_for(c, include_non_eng_source=True)
+                 if _primary_head(f) == c]
+        if not forms:
+            fallback = eng_to_katakana.to_katakana(c)
+            forms = [(fallback, "")] if fallback else []
         best = None  # (dist, katakana, romaji) for this candidate's closest form
-        for f in katakana_forms_for(c, include_non_eng_source=True):
-            if _primary_head(f) != c:
-                continue
-            dist = min(kana_distance.mora_distance(tk, f["katakana"]) for tk in target_kata)
+        for kata, romaji in forms:
+            dist = min(kana_distance.mora_distance(tk, kata) for tk in target_kata)
             if 0 < dist <= max_dist and (best is None or dist < best[0]):
-                best = (round(dist, 3), f["katakana"], f["romaji"])
+                best = (round(dist, 3), kata, romaji)
         if best:
             scored.append({"word": c, "distance": best[0], "katakana": best[1], "romaji": best[2]})
     scored.sort(key=lambda r: (r["distance"], r["word"]))

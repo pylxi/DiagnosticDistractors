@@ -47,6 +47,8 @@ DiagnosticDistractors/
 │   ├── cefr_lookup.py          # CEFR-J word/POS/level lookup (used by both branches)
 │   ├── gairaigo.py             # katakana loanword collision + near-neighbor lookup
 │   ├── phonetic_swaps.py       # L/R, B/V, TH->S/Z, F/H substitution rules
+│   ├── kana_distance.py        # mora-aware katakana distance for gairaigo ranking
+│   ├── eng_to_katakana.py      # rule-based English->katakana fallback (ask -> アスク)
 │   ├── levenshtein_search.py   # plain English-spelling edit-distance search
 │   ├── spelling_branch.py      # orchestrates the four spelling signals above
 │   ├── build_loanword_index.py # builds pipeline/cache/loanwords.json from JMdict
