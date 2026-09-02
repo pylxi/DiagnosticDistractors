@@ -80,9 +80,51 @@ button.ghost {
 .field-note { font-size: 0.8rem; margin: -8px 0 10px; min-height: 1.1em; }
 .field-note.bad { color: var(--bad); }
 .field-note.info { color: var(--text-dim); }
+
+/* How-to-run flyout */
+.help-btn {
+  position: fixed; top: 16px; right: 16px; z-index: 30;
+  font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+  padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text-dim);
+}
+.help-btn:hover { border-color: var(--accent); color: var(--accent); }
+.flyout-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.42); z-index: 40;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.flyout-overlay.open { opacity: 1; pointer-events: auto; }
+.flyout {
+  position: fixed; top: 0; right: 0; height: 100%; width: min(540px, 94vw);
+  background: var(--surface); border-left: 1px solid var(--border); z-index: 50;
+  transform: translateX(100%); transition: transform 0.25s ease;
+  overflow-y: auto; padding: 26px 28px 64px;
+}
+.flyout.open { transform: translateX(0); }
+.flyout h2 { font-size: 1.25rem; margin: 0 0 4px; }
+.flyout h3 { font-size: 0.95rem; font-weight: 600; margin: 24px 0 8px; }
+.flyout p { font-size: 0.88rem; color: var(--text); margin: 0 0 10px; }
+.flyout ol, .flyout ul { padding-left: 20px; margin: 8px 0; }
+.flyout li { font-size: 0.88rem; margin-bottom: 9px; }
+.flyout pre {
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 12px; overflow-x: auto; font-size: 0.78rem; margin: 6px 0;
+  font-family: "IBM Plex Mono", monospace; line-height: 1.5;
+}
+.flyout code { font-family: "IBM Plex Mono", monospace; font-size: 0.82em;
+  background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+.flyout pre code { background: none; padding: 0; }
+.flyout a { color: var(--accent); }
+.flyout .muted { color: var(--text-dim); font-size: 0.82rem; }
+.flyout-close {
+  position: absolute; top: 16px; right: 18px; cursor: pointer;
+  background: none; border: none; font-size: 1.5rem; line-height: 1; color: var(--text-dim);
+}
+.flyout-close:hover { color: var(--text); }
 </style>
 </head>
 <body>
+<button class="help-btn" id="help-btn">? How to run</button>
 <div class="wrap">
   <h1>Diagnostic Distractors</h1>
   <p class="lede">Type a target word (must be in the CEFR-J wordlist) and the sentence it appears in. Both branches run for real (spelling/phonetic + masked-LM semantic), and every candidate below is a checkbox — review the auto-picks, add or drop anything, then export.</p>
@@ -145,6 +187,50 @@ button.ghost {
     </div>
   </div>
 </div>
+
+<div class="flyout-overlay" id="flyout-overlay"></div>
+<aside class="flyout" id="flyout" aria-hidden="true">
+  <button class="flyout-close" id="flyout-close" aria-label="Close">&times;</button>
+  <h2>Diagnostic Distractors</h2>
+  <p class="muted">Multiple-choice distractor generator for English vocabulary tests aimed at Japanese CEFR-J learners.</p>
+
+  <h3>Using this page</h3>
+  <ol>
+    <li>Type a <b>target word</b> — it must be in the CEFR-J wordlist — and the <b>sentence</b> it appears in.</li>
+    <li>If the word has more than one CEFR-J sense (e.g. <code>brush</code> = noun + verb), a <b>part of speech</b> picker appears — choose the one you mean.</li>
+    <li>Click <b>Generate</b>. Two branches run for real: <b>spelling/phonetic</b> look-alikes (katakana + edit-distance, ranked by cross-signal agreement) and <b>semantic</b> distractors (a masked-LM scores each CEFR-J word for how well it fits the blank, then FastText cosine sorts them into tiers).</li>
+    <li>Every candidate is a checkbox, pre-checked to match the pipeline's picks. Review them, then <b>Download selected as .tsv</b>.</li>
+  </ol>
+
+  <h3>Run it yourself (from GitHub)</h3>
+  <p>The repo ships <b>code only</b> — the datasets are gitignored. After cloning (Python 3.9+):</p>
+  <ol>
+    <li><b>Install</b> the package and its dependencies:
+      <pre><code>python3 -m venv venv
+source venv/bin/activate
+pip install -e ".[all]"</code></pre>
+    </li>
+    <li><b>Download the external data</b> into <code>data/</code> (exact links are in the repo's README, "Data sources"):
+      <ul>
+        <li>CEFR-J wordlists → <code>data/CEFR-J/{A1..C2}/words.csv</code></li>
+        <li>JMdict → <code>data/edict/JMdict_e.xml.gz</code></li>
+        <li>fastText <code>wiki-news-300d-1M.vec</code> → <code>data/fasttext/</code></li>
+      </ul>
+    </li>
+    <li><b>Build the generated artifacts</b> (loanword index + CEFR-J-scoped vectors):
+      <pre><code>python3 -m pipeline.build_loanword_index
+python3 -m pipeline.build_pruned_vectors</code></pre>
+    </li>
+    <li><b>Sanity-check</b> that every data source loads:
+      <pre><code>python3 -m pipeline.step1_load_data</code></pre>
+    </li>
+    <li><b>Run this web app</b> (downloads the <code>roberta-large</code> model, ~1.4&nbsp;GB, on first start):
+      <pre><code>uvicorn webapp.app:app --port 8000</code></pre>
+      then open <a href="http://127.0.0.1:8000/">http://127.0.0.1:8000/</a>.
+    </li>
+  </ol>
+  <p class="muted">The spelling branch needs no model and runs in a lightweight environment; only the semantic branch pulls in <code>torch</code>/<code>transformers</code> and the model. Run the test suite with <code>python3 -m pytest tests/</code>.</p>
+</aside>
 
 <script>
 let CURRENT = null; // last successful /api/generate response, for export
@@ -364,6 +450,19 @@ async function lookupWord() {
 
 document.getElementById('word').addEventListener('change', lookupWord);
 document.getElementById('pos').addEventListener('change', updateLevelField);
+
+// --- How-to-run flyout ---------------------------------------------------
+const flyout = document.getElementById('flyout');
+const flyoutOverlay = document.getElementById('flyout-overlay');
+function setFlyout(open) {
+  flyout.classList.toggle('open', open);
+  flyoutOverlay.classList.toggle('open', open);
+  flyout.setAttribute('aria-hidden', open ? 'false' : 'true');
+}
+document.getElementById('help-btn').addEventListener('click', () => setFlyout(true));
+document.getElementById('flyout-close').addEventListener('click', () => setFlyout(false));
+flyoutOverlay.addEventListener('click', () => setFlyout(false));
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setFlyout(false); });
 
 document.getElementById('generate-btn').addEventListener('click', generate);
 document.getElementById('export-btn').addEventListener('click', exportSelected);
