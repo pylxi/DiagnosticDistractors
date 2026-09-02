@@ -50,6 +50,7 @@ DiagnosticDistractors/
 │   ├── levenshtein_search.py   # plain English-spelling edit-distance search
 │   ├── spelling_branch.py      # orchestrates the four spelling signals above
 │   ├── build_loanword_index.py # builds pipeline/cache/loanwords.json from JMdict
+│   ├── build_pruned_vectors.py # builds data/fasttext/pruned_cefr_j.vec from wiki-news
 │   ├── fasttext_bin_probe.py   # low-memory reader for the full cc.en.300.bin FastText model
 │   ├── semantic_branch.py      # masked-LM masking + CEFR-constrained scoring + tiering
 │   ├── step1_load_data.py      # sanity-checks that every data source loads
@@ -104,8 +105,11 @@ active) now that the pipeline is a package:
 # moving/updating any data file)
 python3 -m pipeline.step1_load_data
 
-# Build the loanword index from JMdict (run once, or whenever JMdict updates)
+# Build the two generated data artifacts (run once, or whenever their source
+# data changes): the loanword index from JMdict, and the CEFR-J-scoped
+# FastText vectors from wiki-news-300d-1M.vec
 python3 -m pipeline.build_loanword_index
+python3 -m pipeline.build_pruned_vectors
 
 # Spelling branch — no network/model needed
 python3 -m pipeline.spelling_branch glass light bus collar quiet
@@ -143,8 +147,8 @@ large for git — download each into the path shown:
 | Path | Source | Notes |
 |---|---|---|
 | `data/CEFR-J/{A1,A2,B1,B2,C1,C2}/words.csv` | CEFR-J wordlist (Tono Lab, Tokyo University of Foreign Studies) | ~8,755 unique headword/POS variants; the candidate universe for both branches |
-| `data/fasttext/pruned_cefr_j.vec` | Derived FastText vectors, CEFR-J-scoped (4,252 words × 300 dims) | Used for semantic-branch cosine tiering |
-| `data/fasttext/wiki-news-300d-1M.vec` | [fastText pre-trained vectors](https://fasttext.cc/docs/en/english-vectors.html) | Not currently used by either branch |
+| `data/fasttext/pruned_cefr_j.vec` | **Generated** by `pipeline/build_pruned_vectors.py` — don't download | CEFR-J-scoped subset (~8,579 words × 300 dims) of wiki-news; used for semantic-branch cosine tiering |
+| `data/fasttext/wiki-news-300d-1M.vec` | [fastText pre-trained vectors](https://fasttext.cc/docs/en/english-vectors.html) | **Required** — the source `build_pruned_vectors.py` prunes to CEFR-J |
 | `data/fasttext/cc.en.300.bin.gz` | [fastText Common Crawl vectors, subword model](https://fasttext.cc/docs/en/crawl-vectors.html) | Real subword-hashing model; query only via `pipeline/fasttext_bin_probe.py` — a normal load needs ~5GB+ RAM |
 | `data/edict/JMdict_e.xml.gz` | [JMdict](https://www.edrdg.org/jmdict/j_jmdict.html) (Electronic Dictionary Research and Development Group) | Source for the loanword/gairaigo index |
 | `data/wordnet_ewn/*.yaml` | [Extended WordNet](https://github.com/globalwordnet/english-wordnet) | Not yet wired into either branch — flagged as a candidate-generation signal to add later |

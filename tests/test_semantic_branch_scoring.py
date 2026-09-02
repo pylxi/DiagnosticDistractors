@@ -115,38 +115,39 @@ def test_semantic_distractors_matches_known_good_run_for_ask(model_ready):
     result = sb.semantic_distractors("Did you ___ the price?", "ask", target_pos="verb", target_level="A1")
 
     # 344 = single-token pool (340) + 4 multi-subword verbs now scored rather
-    # than skipped (criticise/frighten/pollute/terrify); all 4 rank well below
-    # the top 50, so the picks below are unchanged by that addition.
+    # than skipped (criticise/frighten/pollute/terrify). n_with_vectors is now
+    # 50/50 after pruned_cefr_j.vec was rebuilt to full wiki-news coverage
+    # (build_pruned_vectors.py), which shifted the tiers and picks below.
     assert result["n_cefr_candidate_pool"] == 344
     assert result["n_scored_by_model"] == 50
-    assert result["n_with_vectors"] == 49
+    assert result["n_with_vectors"] == 50
 
     tiered_stage = next(stage for stage in result["funnel"] if stage["stage"] == "tiered")
-    assert tiered_stage["counts"] == {"discard": 4, "near_miss": 10, "thematic": 20, "unclassified": 12, "control": 3}
+    assert tiered_stage["counts"] == {"discard": 5, "near_miss": 10, "thematic": 20, "unclassified": 12, "control": 3}
 
     picks = result["distractors"]
-    assert picks["near_miss"]["word"] == "know"
-    assert picks["near_miss"]["cosine"] == pytest.approx(0.6408244873930076, abs=1e-3)
-    assert picks["thematic"]["word"] == "receive"
-    assert picks["thematic"]["cosine"] == pytest.approx(0.5270602680589567, abs=1e-3)
+    assert picks["near_miss"]["word"] == "choose"
+    assert picks["near_miss"]["cosine"] == pytest.approx(0.6357119762410568, abs=1e-3)
+    assert picks["thematic"]["word"] == "follow"
+    assert picks["thematic"]["cosine"] == pytest.approx(0.5256689669272794, abs=1e-3)
     assert picks["control"]["word"] == "record"
     assert picks["control"]["cosine"] == pytest.approx(0.32510058770355293, abs=1e-3)
 
 
 def test_semantic_distractors_matches_known_good_run_for_brush(model_ready):
-    # pinned against a real roberta-large run (pipeline/cache/batch_result.json,
-    # captured 2026-09-01 after switching off the broken deberta-v3-large head)
+    # pinned against a real roberta-large run (pipeline/cache/batch_result.json),
+    # after rebuilding pruned_cefr_j.vec to full wiki-news coverage.
     result = sb.semantic_distractors("The leaves ___ her cheek.", "brush", target_pos="verb", target_level="A1")
 
     assert result["n_cefr_candidate_pool"] == 344  # incl. 4 multi-subword verbs (see ask test)
     assert result["n_scored_by_model"] == 50
-    assert result["n_with_vectors"] == 48
+    assert result["n_with_vectors"] == 50
 
     picks = result["distractors"]
-    assert picks["near_miss"]["word"] == "hide"
-    assert picks["near_miss"]["cosine"] == pytest.approx(0.4280337515013492, abs=1e-3)
-    assert picks["thematic"]["word"] == "hit"
-    assert picks["thematic"]["cosine"] == pytest.approx(0.3351288842668256, abs=1e-3)
+    assert picks["near_miss"]["word"] == "clean"
+    assert picks["near_miss"]["cosine"] == pytest.approx(0.4199522167610654, abs=1e-3)
+    assert picks["thematic"]["word"] == "bake"
+    assert picks["thematic"]["cosine"] == pytest.approx(0.332667066740834, abs=1e-3)
     assert picks["control"]["word"] == "read"
     assert picks["control"]["cosine"] == pytest.approx(0.24283236230459979, abs=1e-3)
 
