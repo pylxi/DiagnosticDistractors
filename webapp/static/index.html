@@ -119,7 +119,7 @@ button.ghost {
     </div>
 
     <div class="panel">
-      <h2>Spelling branch — signal cascade</h2>
+      <h2>Spelling branch — signal contributions</h2>
       <div id="sp-funnel"></div>
     </div>
     <div class="panel">
@@ -214,14 +214,13 @@ function render(d) {
     document.getElementById('sp-candidates').innerHTML = '';
   } else {
     document.getElementById('sp-funnel').innerHTML = sp.funnel.map(f =>
-      f.ran
-        ? kvRow(f.source, `${f.raw_candidates} raw → ${f.passed_cefr_gate} passed CEFR gate → running total ${f.running_total}`)
-        : kvRow(f.source, `skipped — ${f.reason}`)
-    ).join('');
+      kvRow(f.source, `${f.raw_candidates} raw → ${f.passed_cefr_gate} passed CEFR gate`)
+    ).join('') + kvRow('ranked by corroboration',
+      `${sp.n_corroborated} found by 2+ signals → top ${sp.distractors.length} kept`);
     const autoPicked = new Set(sp.distractors.map(p => p.word));
     document.getElementById('sp-candidates').innerHTML = sp.all_found.length
-      ? sp.all_found.map(p => candChip(p.word, `${p.source} · ${p.level}`, autoPicked.has(p.word), {
-          branch: 'spelling', word: p.word, source: p.source, level: p.level,
+      ? sp.all_found.map(p => candChip(p.word, `${p.sources.join(' + ')} · ${p.level}`, autoPicked.has(p.word), {
+          branch: 'spelling', word: p.word, source: p.sources.join('+'), level: p.level,
         })).join('')
       : '<span class="hint" style="margin:0;">No spelling-branch candidates found for this word.</span>';
   }

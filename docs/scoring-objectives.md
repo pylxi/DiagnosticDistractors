@@ -64,5 +64,6 @@ distractors are a *spread* of semantic distances rather than three
 near-synonyms. This is still the "contextual/semantic plausibility" objective —
 it just recognizes that three equally-plausible near-synonyms make a worse item
 than one near-miss, one thematically-related word, and one plausible-but-clearly-
-distinct control. The spelling branch's analogue is simply its four
-distinct signals feeding one pool in priority order.
+distinct control. The spelling branch's analogue is that its four signals feed
+one pool and are ranked by confusability, with cross-signal agreement (a word
+that both *looks* and *sounds* like the target) as the top quality tier.

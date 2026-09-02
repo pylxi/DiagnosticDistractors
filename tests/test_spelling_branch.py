@@ -12,11 +12,13 @@ def test_result_shape():
     out = spb.spelling_distractors("ask", n=3)
     assert set(out.keys()) == {
         "target", "target_pos", "target_level", "distractors",
-        "all_found", "sufficient", "funnel",
+        "all_found", "sufficient", "funnel", "n_corroborated",
     }
     assert out["target"] == "ask"
     assert out["target_pos"] == "verb"
     assert out["target_level"] == "A1"
+    for c in out["all_found"]:
+        assert set(c.keys()) == {"word", "level", "pos", "source", "sources", "score"}
 
 
 def test_distractors_is_capped_at_n_but_all_found_is_not():
@@ -31,16 +33,30 @@ def test_funnel_has_one_entry_per_signal_in_priority_order():
     assert sources == ["gairaigo_exact", "phonetic_swap", "gairaigo_near", "levenshtein"]
 
 
-def test_cascade_stops_once_quota_is_met():
-    # confirmed real behavior: "glass" reaches its quota of 3 within the
-    # gairaigo signals (grass/glasses/class ... are real katakana neighbors),
-    # so levenshtein must be recorded as skipped, not silently run-but-empty.
+def test_all_signals_run_and_report_gate_counts():
+    # No cascade short-circuit any more: every signal runs and reports how many
+    # raw candidates it proposed and how many passed the CEFR gate.
     out = spb.spelling_distractors("glass", n=3)
-    funnel_by_source = {f["source"]: f for f in out["funnel"]}
-    assert funnel_by_source["gairaigo_near"]["ran"] is True
-    assert funnel_by_source["gairaigo_near"]["running_total"] >= 3
-    assert funnel_by_source["levenshtein"]["ran"] is False
-    assert "quota" in funnel_by_source["levenshtein"]["reason"]
+    for f in out["funnel"]:
+        assert f["passed_cefr_gate"] <= f["raw_candidates"]
+        assert "ran" not in f and "running_total" not in f
+
+
+def test_corroborated_candidates_outrank_single_signal_ones():
+    # run/verb look-alikes found by BOTH spelling (levenshtein) and sound
+    # (gairaigo_near) -- rain/ring/turn/win -- rank at the top; ruin (a strong
+    # levenshtein edit-1 the old stop-at-quota cascade skipped) now makes the
+    # cut; and phone (katakana-near only, weak) does not.
+    out = spb.spelling_distractors("run", target_pos="verb", target_level="A1", n=8)
+    top = [c["word"] for c in out["distractors"]]
+    assert {"rain", "ring", "turn", "win"} <= set(top)
+    assert "ruin" in top          # levenshtein edit-1, formerly crowded out
+    assert "phone" not in top     # katakana-near only, weak
+    assert out["n_corroborated"] >= 3
+    # a corroborated candidate scores at least as high as a single-signal one
+    by_word = {c["word"]: c for c in out["all_found"]}
+    assert by_word["rain"]["score"] > by_word["phone"]["score"]
+    assert len(by_word["rain"]["sources"]) >= 2
 
 
 def test_no_multi_word_candidates():
