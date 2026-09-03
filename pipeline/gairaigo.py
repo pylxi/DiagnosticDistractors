@@ -57,25 +57,33 @@ def katakana_forms_for(word, include_non_eng_source=False):
 def exact_katakana_collisions(word, exclude_words=None, allowed_heads=None):
     """Other English words that share the SAME katakana reading as `word`.
 
-    If `allowed_heads` is given, only those English words are considered as
-    candidates -- pass the CEFR-J pool so collisions are drawn from the actual
-    answer space rather than all of JMdict's loanword glosses.
+    Only words for which the katakana is their own PRIMARY-gloss reading count,
+    on both sides: `word` must be primary-glossed by the reading, and so must
+    each collision. This avoids surfacing a word that merely appears as a
+    secondary gloss on a shared record -- "talk" is トーク, and that record also
+    glosses "chat"/"banter", but chat's own reading is チャット, so chat is not a
+    genuine トーク homophone. (bus/bath/bass and light/right are separate records
+    each primary-glossed to their katakana, so those real collisions are kept.)
+
+    If `allowed_heads` is given, only those English words are returned -- pass the
+    CEFR-J pool so collisions are drawn from the actual answer space.
     """
     _load()
     exclude_words = exclude_words or set()
     exclude_words = {word.lower()} | {w.lower() for w in exclude_words}
-    forms = katakana_forms_for(word, include_non_eng_source=True)
+    # katakana readings for which `word` itself is the primary gloss
+    target_katas = {f["katakana"] for f in katakana_forms_for(word, include_non_eng_source=True)
+                    if _primary_head(f) == word.lower()}
     collisions = defaultdict(set)  # katakana -> set of other english heads
-    for form in forms:
-        katakana = form["katakana"]
-        for r in _records:
-            if r["katakana"] == katakana:
-                for h in r["heads"]:
-                    if h in exclude_words:
-                        continue
-                    if allowed_heads is not None and h not in allowed_heads:
-                        continue
-                    collisions[katakana].add(h)
+    for r in _records:
+        if r["katakana"] not in target_katas:
+            continue
+        h = _primary_head(r)
+        if h in exclude_words:
+            continue
+        if allowed_heads is not None and h not in allowed_heads:
+            continue
+        collisions[r["katakana"]].add(h)
     return collisions
 
 def near_katakana_neighbors(word, max_dist=2, top_n=15, exclude_words=None):

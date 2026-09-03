@@ -8,11 +8,23 @@ from pipeline import gairaigo
 
 
 def test_exact_katakana_collisions_bus_finds_bath_and_bass():
-    # bus/bath/bass/double bass all share the basu katakana reading -- the
-    # canonical example of the strongest spelling-branch signal.
+    # bus/bath/bass all share the basu katakana reading, each as the primary
+    # gloss of its own JMdict record -- the canonical strongest spelling signal.
     collisions = gairaigo.exact_katakana_collisions("bus")
     assert "バス" in collisions
-    assert {"bath", "bass", "double bass"} <= collisions["バス"]
+    assert {"bath", "bass"} <= collisions["バス"]
+    # "double bass" is only a *secondary* gloss of the bass record, not its own
+    # バス reading, so the primary-gloss filter correctly drops it.
+    assert "double bass" not in collisions["バス"]
+
+
+def test_exact_katakana_collisions_ignores_secondary_glosses():
+    # "talk" is トーク; that record also glosses "chat"/"banter", but chat's own
+    # reading is チャット, so chat is not a genuine トーク homophone and must not
+    # be reported as an exact collision for talk.
+    collisions = gairaigo.exact_katakana_collisions("talk")
+    all_hits = {h for hits in collisions.values() for h in hits}
+    assert "chat" not in all_hits and "banter" not in all_hits
 
 
 def test_exact_katakana_collisions_excludes_the_word_itself():
