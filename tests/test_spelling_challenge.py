@@ -53,3 +53,14 @@ def test_target_inflections_are_excluded():
 def test_vulgar_words_are_blocked():
     out = sc.spelling_challenge_distractors("glass", n=20)
     assert "ass" not in set(_words(out))
+
+
+def test_real_word_lookalikes_share_the_first_letter():
+    # An orthographic distractor must share the target's opening letter, so
+    # brush keeps blush/brash/bush but drops crush/rush. (The transliteration
+    # distractor is exempt -- career -> "kyaria".)
+    out = sc.spelling_challenge_distractors("brush", n=20)
+    for d in out["distractors"]:
+        if d["source"] != "transliteration":
+            assert d["word"][0] == "b", d["word"]
+    assert "crush" not in set(_words(out)) and "rush" not in set(_words(out))

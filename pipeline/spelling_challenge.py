@@ -99,10 +99,13 @@ def spelling_challenge_distractors(word, n=8, max_dist=2):
 
     merged = {}  # candidate -> {"sources": {signal: score}, "is_real_word", "katakana"}
 
-    # 1. real-word look-alikes by edit distance
+    # 1. real-word look-alikes by edit distance. First letter must match the
+    #    target: an orthographic distractor should share the word's opening, the
+    #    part a learner most reliably remembers (brush -> blush/brash/bush, not
+    #    crush/rush).
     for cand in words:
-        if cand in excluded or cand in _BLOCKLIST or len(cand) < 3 \
-                or abs(len(cand) - len(word)) > max_dist:
+        if cand[0] != word[0] or cand in excluded or cand in _BLOCKLIST \
+                or len(cand) < 3 or abs(len(cand) - len(word)) > max_dist:
             continue
         dist = Levenshtein.distance(word, cand)
         if not (0 < dist <= max_dist):
@@ -114,7 +117,7 @@ def spelling_challenge_distractors(word, n=8, max_dist=2):
 
     # phonetic swaps that are real words but landed outside the edit window
     for cand in phonetic_hits:
-        if cand in excluded or len(cand) < 3 or cand not in words:
+        if cand[0] != word[0] or cand in excluded or len(cand) < 3 or cand not in words:
             continue
         entry = merged.setdefault(cand, {"sources": {}, "is_real_word": True, "katakana": None})
         entry["sources"].setdefault("phonetic", _S_PHONETIC)
