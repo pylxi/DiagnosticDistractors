@@ -55,12 +55,21 @@ def test_vulgar_words_are_blocked():
     assert "ass" not in set(_words(out))
 
 
-def test_real_word_lookalikes_share_the_first_letter():
-    # An orthographic distractor must share the target's opening letter, so
-    # brush keeps blush/brash/bush but drops crush/rush. (The transliteration
-    # distractor is exempt -- career -> "kyaria".)
-    out = sc.spelling_challenge_distractors("brush", n=20)
-    for d in out["distractors"]:
-        if d["source"] != "transliteration":
+def test_levenshtein_lookalikes_must_share_first_letter():
+    # The first-letter rule is specific to the Levenshtein signal: it stops pure
+    # edit-distance coincidences (brush drops crush/rush; jump never gets lamp).
+    out = sc.spelling_challenge_distractors("brush", n=30)
+    for d in out["all_found"]:
+        if ("edit1" in d["sources"] or "edit2" in d["sources"]) and "phonetic" not in d["sources"]:
             assert d["word"][0] == "b", d["word"]
     assert "crush" not in set(_words(out)) and "rush" not in set(_words(out))
+    jump = sc.spelling_challenge_distractors("jump", n=30)
+    assert "lamp" not in {d["word"] for d in jump["all_found"]}
+
+
+def test_phonetic_swap_survives_a_first_letter_change():
+    # ...but a common confused-sound swap at the first letter survives, because
+    # it comes from the phonetic signal, not Levenshtein: light -> right.
+    out = sc.spelling_challenge_distractors("light", n=20)
+    right = next((d for d in out["all_found"] if d["word"] == "right"), None)
+    assert right is not None and right["source"] == "phonetic"

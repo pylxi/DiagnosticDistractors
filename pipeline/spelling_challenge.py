@@ -100,10 +100,11 @@ def spelling_challenge_distractors(word, n=8, max_dist=2):
 
     merged = {}  # candidate -> {"sources": {signal: score}, "is_real_word", "katakana"}
 
-    # 1. real-word look-alikes by edit distance. First letter must match the
-    #    target: an orthographic distractor should share the word's opening, the
-    #    part a learner most reliably remembers (brush -> blush/brash/bush, not
-    #    crush/rush).
+    # 1. real-word look-alikes by edit distance. The FIRST LETTER must match the
+    #    target -- this rule is specific to the Levenshtein signal, to stop pure
+    #    edit-distance coincidences that don't read as look-alikes (jump/lamp).
+    #    An orthographic distractor should share the opening a learner most
+    #    reliably remembers (brush -> blush/brash/bush, not crush/rush).
     for cand in words:
         if cand[0] != word[0] or cand in excluded or cand in _BLOCKLIST \
                 or len(cand) < 3 or abs(len(cand) - len(word)) > max_dist:
@@ -116,9 +117,12 @@ def spelling_challenge_distractors(word, n=8, max_dist=2):
         if cand in phonetic_hits:
             entry["sources"]["phonetic"] = _S_PHONETIC
 
-    # phonetic swaps that are real words but landed outside the edit window
+    # 2. phonetic-swap look-alikes (common confused sounds: L/R, B/V, TH<->S,
+    #    F/H). These are NOT subject to the first-letter rule -- the confusion is
+    #    often *at* the first letter, so light -> right, read -> lead must survive
+    #    here rather than being cut as edit-distance matches.
     for cand in phonetic_hits:
-        if cand[0] != word[0] or cand in excluded or len(cand) < 3 or cand not in words:
+        if cand in excluded or cand in _BLOCKLIST or len(cand) < 3 or cand not in words:
             continue
         entry = merged.setdefault(cand, {"sources": {}, "is_real_word": True, "katakana": None})
         entry["sources"].setdefault("phonetic", _S_PHONETIC)
