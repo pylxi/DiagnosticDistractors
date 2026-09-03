@@ -161,11 +161,8 @@ button.ghost {
     </div>
 
     <div class="panel">
-      <h2>Spelling branch — signal contributions</h2>
-      <div id="sp-funnel"></div>
-    </div>
-    <div class="panel">
-      <h2>Spelling branch — candidates <span class="hint" style="display:inline;margin:0;">(check the ones to keep)</span></h2>
+      <h2>Orthographic (spelling) distractors <span class="hint" style="display:inline;margin:0;">(check the ones to keep)</span></h2>
+      <p class="hint" style="margin:0 0 12px;">Real-word look-alikes and katakana-influenced misspellings (non-words). Each label is informational — POS/level and word-hood, not a filter.</p>
       <div class="cand-list" id="sp-candidates"></div>
     </div>
 
@@ -247,6 +244,13 @@ function candChip(word, sub, checked, dataAttrs) {
   return `<label class="cand"><input type="checkbox" ${checked ? 'checked' : ''} ${attrs}>${escapeHtml(word)}${sub ? ` <span class="sub">${escapeHtml(sub)}</span>` : ''}</label>`;
 }
 
+// Informational label for an orthographic candidate (not a filter).
+function spTag(p) {
+  if (!p.is_real_word) return 'non-word' + (p.katakana ? ' ' + p.katakana : '');
+  if (p.cefr && p.cefr.length) return p.cefr.map(e => e.level + ' ' + e.pos).join(', ');
+  return 'not in CEFR-J';
+}
+
 async function generate() {
   const word = document.getElementById('word').value.trim();
   const sentence = document.getElementById('sentence').value.trim();
@@ -297,19 +301,14 @@ function render(d) {
 
   const sp = d.spelling;
   if (sp.error) {
-    document.getElementById('sp-funnel').innerHTML = kvRow('error', sp.error);
-    document.getElementById('sp-candidates').innerHTML = '';
+    document.getElementById('sp-candidates').innerHTML = kvRow('error', sp.error);
   } else {
-    document.getElementById('sp-funnel').innerHTML = sp.funnel.map(f =>
-      kvRow(f.source, `${f.raw_candidates} raw → ${f.passed_cefr_gate} passed CEFR gate`)
-    ).join('') + kvRow('ranked by corroboration',
-      `${sp.n_corroborated} found by 2+ signals → top ${sp.distractors.length} kept`);
     const autoPicked = new Set(sp.distractors.map(p => p.word));
     document.getElementById('sp-candidates').innerHTML = sp.all_found.length
-      ? sp.all_found.map(p => candChip(p.word, `${p.sources.join(' + ')} · ${p.level}`, autoPicked.has(p.word), {
-          branch: 'spelling', word: p.word, source: p.sources.join('+'), level: p.level,
+      ? sp.all_found.map(p => candChip(p.word, `${p.sources.join('+')} · ${spTag(p)}`, autoPicked.has(p.word), {
+          branch: 'spelling', word: p.word, source: p.sources.join('+'), level: spTag(p),
         })).join('')
-      : '<span class="hint" style="margin:0;">No spelling-branch candidates found for this word.</span>';
+      : '<span class="hint" style="margin:0;">No orthographic candidates found for this word.</span>';
   }
 
   const sem = d.semantic;

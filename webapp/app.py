@@ -27,7 +27,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from pipeline import cefr_lookup as cefr
-from pipeline import spelling_branch
+from pipeline import spelling_challenge
 from pipeline import semantic_branch
 
 _MODEL_NAME = "roberta-large"
@@ -162,11 +162,10 @@ def generate(req: GenerateRequest):
         )
     try:
         try:
-            # n=8 (not the pipeline's default of 3) so the review step in the UI
-            # has more than the bare minimum to choose from.
-            entry["spelling"] = spelling_branch.spelling_distractors(
-                word, target_pos=pos, target_level=level, n=8
-            )
+            # Orthographic (spelling-cloze) distractors: form look-alikes +
+            # katakana-influenced non-words. No POS/level gate -- form confusion
+            # doesn't care -- so this doesn't use the resolved pos/level.
+            entry["spelling"] = spelling_challenge.spelling_challenge_distractors(word, n=8)
         except Exception as e:
             entry["spelling"] = {"error": str(e)}
 
