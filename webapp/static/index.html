@@ -219,7 +219,8 @@ pip install -e ".[all]"</code></pre>
     </li>
     <li><b>Build the generated artifacts</b> (loanword index + CEFR-J-scoped vectors):
       <pre><code>python3 -m pipeline.build_loanword_index
-python3 -m pipeline.build_pruned_vectors</code></pre>
+python3 -m pipeline.build_pruned_vectors
+python3 -m pipeline.build_english_wordlist</code></pre>
     </li>
     <li><b>Sanity-check</b> that every data source loads:
       <pre><code>python3 -m pipeline.step1_load_data</code></pre>

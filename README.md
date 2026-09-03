@@ -50,7 +50,9 @@ DiagnosticDistractors/
 │   ├── kana_distance.py        # mora-aware katakana distance for gairaigo ranking
 │   ├── eng_to_katakana.py      # rule-based English->katakana fallback (ask -> アスク)
 │   ├── levenshtein_search.py   # plain English-spelling edit-distance search
-│   ├── spelling_branch.py      # orchestrates the four spelling signals above
+│   ├── spelling_branch.py      # orchestrates the four spelling signals above (real-word, POS/level-gated)
+│   ├── spelling_challenge.py   # spelling-cloze distractors: look-alikes + transliteration non-words
+│   ├── build_english_wordlist.py # builds pipeline/cache/english_words.txt from wiki-news
 │   ├── build_loanword_index.py # builds pipeline/cache/loanwords.json from JMdict
 │   ├── build_pruned_vectors.py # builds data/fasttext/pruned_cefr_j.vec from wiki-news
 │   ├── fasttext_bin_probe.py   # low-memory reader for the full cc.en.300.bin FastText model
@@ -112,6 +114,7 @@ python3 -m pipeline.step1_load_data
 # FastText vectors from wiki-news-300d-1M.vec
 python3 -m pipeline.build_loanword_index
 python3 -m pipeline.build_pruned_vectors
+python3 -m pipeline.build_english_wordlist
 
 # Spelling branch — no network/model needed
 python3 -m pipeline.spelling_branch glass light bus collar quiet
