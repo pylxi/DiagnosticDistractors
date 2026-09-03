@@ -19,7 +19,6 @@ RULES = [
     ("th", "z"), ("z", "th"),
     ("f", "h"), ("h", "f"),           # fat/hat
     ("si", "shi"), ("shi", "si"),
-    ("v", "b"),
 ]
 
 def _substitute_at(word, start, from_str, to_str):

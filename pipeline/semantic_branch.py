@@ -79,17 +79,36 @@ def _get_model_and_tokenizer(model_name):
     return _MODEL_CACHE[model_name]
 
 
+_VEC_CACHE = None
+
+
 def load_pruned_vectors():
+    """word -> vector, from data/fasttext/pruned_cefr_j.vec. Cached for the
+    process (the web app calls this on every request), and each row is checked
+    against the header's declared dimensionality so a malformed line fails loudly
+    instead of silently producing a wrong-length vector."""
+    global _VEC_CACHE
+    if _VEC_CACHE is not None:
+        return _VEC_CACHE
     vecs = {}
     with open(VEC_PATH, "r", encoding="utf-8") as f:
-        next(f)  # header line: "<n_words> <dim>"
-        for line in f:
-            parts = line.rstrip().split(" ")
-            vecs[parts[0]] = [float(x) for x in parts[1:]]
+        dim = int(next(f).split()[1])  # header line: "<n_words> <dim>"
+        for lineno, line in enumerate(f, start=2):
+            parts = line.rstrip("\n").split(" ")
+            vec = [float(x) for x in parts[1:]]
+            if len(vec) != dim:
+                raise ValueError(f"{VEC_PATH}:{lineno}: expected {dim} dims for "
+                                 f"{parts[0]!r}, got {len(vec)}")
+            vecs[parts[0]] = vec
+    _VEC_CACHE = vecs
     return vecs
 
 
 def cosine(a, b):
+    if len(a) != len(b):
+        # vectors are all the same dim in practice; guard rather than let zip()
+        # silently truncate to the shorter one and return a plausible-but-wrong value.
+        return 0.0
     dot = sum(x * y for x, y in zip(a, b))
     na = math.sqrt(sum(x * x for x in a))
     nb = math.sqrt(sum(x * x for x in b))
