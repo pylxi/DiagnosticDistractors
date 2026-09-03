@@ -1,126 +1,33 @@
 """
-Tests for pipeline/gairaigo.py -- katakana-collision and near-neighbor
-loanword lookups, built on the real pipeline/cache/loanwords.json (built
-from JMdict by build_loanword_index.py). Run build_loanword_index.py first
-if that cache file doesn't exist yet.
+Tests for pipeline/gairaigo.py -- the JMdict loanword lookup, built on the real
+pipeline/cache/loanwords.json (built from JMdict by build_loanword_index.py).
+Run build_loanword_index.py first if that cache file doesn't exist yet.
 """
 from pipeline import gairaigo
 
 
-def test_exact_katakana_collisions_bus_finds_bath_and_bass():
-    # bus/bath/bass all share the basu katakana reading, each as the primary
-    # gloss of its own JMdict record -- the canonical strongest spelling signal.
-    collisions = gairaigo.exact_katakana_collisions("bus")
-    assert "バス" in collisions
-    assert {"bath", "bass"} <= collisions["バス"]
-    # "double bass" is only a *secondary* gloss of the bass record, not its own
-    # バス reading, so the primary-gloss filter correctly drops it.
-    assert "double bass" not in collisions["バス"]
+def test_katakana_forms_for_known_loanword():
+    romajis = {f["romaji"] for f in gairaigo.katakana_forms_for("bus", include_non_eng_source=True)}
+    assert "basu" in romajis
 
 
-def test_exact_katakana_collisions_ignores_secondary_glosses():
-    # "talk" is トーク; that record also glosses "chat"/"banter", but chat's own
-    # reading is チャット, so chat is not a genuine トーク homophone and must not
-    # be reported as an exact collision for talk.
-    collisions = gairaigo.exact_katakana_collisions("talk")
-    all_hits = {h for hits in collisions.values() for h in hits}
-    assert "chat" not in all_hits and "banter" not in all_hits
+def test_katakana_forms_for_unknown_word_is_empty():
+    assert gairaigo.katakana_forms_for("zzznotarealword", include_non_eng_source=True) == []
 
 
-def test_exact_katakana_collisions_excludes_the_word_itself():
-    collisions = gairaigo.exact_katakana_collisions("bus")
-    for words in collisions.values():
-        assert "bus" not in words
-
-
-def test_exact_katakana_collisions_respects_exclude_words():
-    baseline = gairaigo.exact_katakana_collisions("bus")
-    to_drop = next(iter(baseline["バス"]))
-    filtered = gairaigo.exact_katakana_collisions("bus", exclude_words={to_drop})
-    assert to_drop not in filtered.get("バス", set())
-
-
-def test_exact_katakana_collisions_unknown_word_is_empty():
-    assert dict(gairaigo.exact_katakana_collisions("zzznotarealword")) == {}
-
-
-def test_near_katakana_neighbors_glass_finds_class_at_distance_one():
-    neighbors = gairaigo.near_katakana_neighbors("glass", max_dist=1, top_n=10)
-    by_word = {n["word"]: n for n in neighbors}
-    assert "class" in by_word
-    assert by_word["class"]["distance"] == 1
-
-
-def test_near_katakana_neighbors_never_returns_zero_distance():
-    # the function's own guard is `if 0 < dist <= max_dist`, i.e. an exact
-    # reading match to yourself should never show up as a "near neighbor"
-    for n in gairaigo.near_katakana_neighbors("glass", max_dist=2, top_n=30):
-        assert n["distance"] > 0
-        assert n["word"] != "glass"
-
-
-def test_near_katakana_neighbors_respects_top_n():
-    neighbors = gairaigo.near_katakana_neighbors("glass", max_dist=2, top_n=3)
-    assert len(neighbors) <= 3
-
-
-def test_near_katakana_neighbors_word_with_no_loanword_form_is_empty():
-    assert gairaigo.near_katakana_neighbors("zzznotarealword", max_dist=2) == []
-
-
-def test_near_katakana_neighbors_sorted_by_distance_ascending():
-    neighbors = gairaigo.near_katakana_neighbors("glass", max_dist=2, top_n=30)
-    distances = [n["distance"] for n in neighbors]
-    assert distances == sorted(distances)
-
-
-def test_near_neighbors_among_matches_on_the_candidates_own_reading():
-    # "draw" is written ドロー; the katakana タイ ("tie") only lists "draw" as a
-    # secondary gloss. near_katakana_neighbors_among must NOT surface draw as a
-    # neighbor of run (ラン) through that polysemy -- only words whose *primary*
-    # reading is close should appear (win via ウィン, land via ランド, ...).
-    candidates = {"draw", "drop", "enter", "cut", "win", "land", "love"}
-    got = {n["word"] for n in gairaigo.near_katakana_neighbors_among("run", candidates)}
-    assert "draw" not in got and "enter" not in got and "cut" not in got
-    assert "win" in got  # ウィン, matched on its own reading
-
-
-def test_near_neighbors_among_ranks_by_mora_distance_not_gloss_polysemy():
-    # "fall" is written ダウン (da-u-n) -- a genuine but distant reading from run
-    # (ラン); the mora metric must rank it below same-row vowel look-alikes and,
-    # at the default threshold, drop it entirely.
-    candidates = {"fall", "ring", "turn", "win", "land"}
-    got = {n["word"] for n in gairaigo.near_katakana_neighbors_among("run", candidates)}
-    assert "fall" not in got
-    assert {"ring", "turn"} <= got
-
-
-def test_near_neighbors_among_falls_back_to_transliteration_for_non_loanwords():
-    # "add" has no JMdict katakana form (it isn't a Japanese loanword), so it
-    # used to get no gairaigo signal at all. With the transliteration fallback
-    # (add -> アド) it now finds katakana look-alikes among the candidates.
-    assert gairaigo.katakana_forms_for("add", include_non_eng_source=True) == []
-    got = gairaigo.near_katakana_neighbors_among(
-        "add", {"read", "need", "hide", "order", "jump"}, top_n=10)
-    assert len(got) >= 2  # e.g. read/need/hide, matched via transliteration
-
-
-def test_near_neighbors_among_only_returns_candidates_from_the_given_set():
-    candidates = {"win", "land"}
-    got = {n["word"] for n in gairaigo.near_katakana_neighbors_among("run", candidates)}
-    assert got <= candidates
+def test_primary_head_is_the_first_gloss():
+    # "talk" is the primary gloss of トーク (which also glosses chat/banter);
+    # career's own reading is キャリア.
+    forms = {f["katakana"]: gairaigo._primary_head(f)
+             for f in gairaigo.katakana_forms_for("talk", include_non_eng_source=True)}
+    assert forms.get("トーク") == "talk"
 
 
 def test_loanword_index_excludes_native_words_with_katakana_readings():
     # Regression: 刷毛 (hake, "brush") is a NATIVE word read はけ/ハケ, not a
-    # gairaigo. It used to leak into the index and make brush's near-neighbor
-    # search key off the short reading "hake", flooding results with unrelated
-    # native vocab (cliff/bamboo/...). brush must now resolve only to its real
-    # katakana loanword ブラシ, and its neighbors must not include that junk.
+    # gairaigo. It used to leak into the index; brush must now resolve only to
+    # its real katakana loanword ブラシ (burashi), never the native "hake".
     romajis = {f["romaji"] for f in gairaigo.katakana_forms_for("brush",
-                                                                 include_non_eng_source=True)}
+                                                                include_non_eng_source=True)}
     assert "hake" not in romajis
     assert romajis == {"burashi"}
-
-    neighbor_words = {n["word"] for n in gairaigo.near_katakana_neighbors("brush", max_dist=2, top_n=30)}
-    assert not ({"cliff", "bamboo", "precipice", "despair"} & neighbor_words)

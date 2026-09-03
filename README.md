@@ -11,23 +11,20 @@ LLM in the runtime pipeline itself.
 Distractors fail for two very different reasons, so there are two independent
 generators, merged into one pool for human review:
 
-- **Spelling / phonetic branch** (`pipeline/spelling_branch.py`) — catches
-  confusions from how a word *looks or sounds* to a Japanese learner:
-  identical katakana loanword readings (bus/bath), common sound-substitution
-  errors (L/R, B/V, TH→S/Z, F/H), and plain English-spelling edit distance
-  (quiet/quite). No model inference — pure lookup and rule-based generation
-  over JMdict and the CEFR-J wordlist.
-- **Semantic branch** (`pipeline/semantic_branch.py`) — catches confusions
-  from *meaning in context*: a local masked-language model (roberta-large by
-  default) scores every CEFR-J word at the target's level for how well it fits the blanked
-  sentence, then FastText cosine similarity sorts survivors into a spread of
-  plausibility (near-miss / thematic / control) rather than three
-  near-synonyms.
-
-Both branches only ever draw candidates from the CEFR-J wordlist at the
-learner's level (±1 as a fallback) — a distractor above the learner's level
-isn't a distractor, it's a giveaway, so the level window is never widened to
-fix a low-yield sentence.
+- **Orthographic (spelling) branch** (`pipeline/spelling_challenge.py`) — for a
+  spelling-focused cloze: catches confusions from how a word *looks* to a
+  Japanese learner. Real-word look-alikes within a small edit distance (first
+  letter kept, brush→blush/bush), common sound-substitution errors (L/R, B/V,
+  TH→S/Z, F/H — light→right), and a katakana-influenced transliteration
+  *non-word* (career→"kyaria", brush→"burashi"). No model inference, and no
+  POS/level gate — form confusion doesn't depend on either; candidates carry an
+  informational label instead.
+- **Semantic branch** (`pipeline/semantic_branch.py`) — for a meaning/context
+  cloze: a local masked-language model (roberta-large by default) scores every
+  CEFR-J word at the target's level for how well it fits the blanked sentence,
+  then FastText cosine similarity sorts survivors into a spread of plausibility
+  (near-miss / thematic / control) rather than three near-synonyms. This branch
+  keeps the CEFR-J pos/level gate — a meaning distractor has to fit the slot.
 
 See the live walkthroughs for more detail (real code, real intermediate
 data, not a mockup):
@@ -47,11 +44,8 @@ DiagnosticDistractors/
 │   ├── cefr_lookup.py          # CEFR-J word/POS/level lookup (used by both branches)
 │   ├── gairaigo.py             # katakana loanword collision + near-neighbor lookup
 │   ├── phonetic_swaps.py       # L/R, B/V, TH->S/Z, F/H substitution rules
-│   ├── kana_distance.py        # mora-aware katakana distance for gairaigo ranking
 │   ├── eng_to_katakana.py      # rule-based English->katakana fallback (ask -> アスク)
-│   ├── levenshtein_search.py   # plain English-spelling edit-distance search
-│   ├── spelling_branch.py      # orchestrates the four spelling signals above (real-word, POS/level-gated)
-│   ├── spelling_challenge.py   # spelling-cloze distractors: look-alikes + transliteration non-words
+│   ├── spelling_challenge.py   # orthographic distractors: look-alikes + transliteration non-words
 │   ├── build_english_wordlist.py # builds pipeline/cache/english_words.txt from wiki-news
 │   ├── build_loanword_index.py # builds pipeline/cache/loanwords.json from JMdict
 │   ├── build_pruned_vectors.py # builds data/fasttext/pruned_cefr_j.vec from wiki-news
@@ -116,8 +110,8 @@ python3 -m pipeline.build_loanword_index
 python3 -m pipeline.build_pruned_vectors
 python3 -m pipeline.build_english_wordlist
 
-# Spelling branch — no network/model needed
-python3 -m pipeline.spelling_branch glass light bus collar quiet
+# Orthographic (spelling) branch — no network/model needed
+python3 -m pipeline.spelling_challenge glass light brush career ask
 
 # Semantic branch — needs the [semantic] extra (torch/transformers), and
 # network access the first time (to download the model)

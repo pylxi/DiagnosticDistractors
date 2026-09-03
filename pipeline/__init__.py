@@ -3,10 +3,10 @@
 Importable modules (see each module's docstring for details):
 
 - ``cefr_lookup``          -- CEFR-J word/POS/level lookup, shared by both branches
-- ``gairaigo``             -- katakana loanword collision + near-neighbor lookup
+- ``gairaigo``             -- JMdict loanword (gairaigo) katakana lookup
 - ``phonetic_swaps``       -- L/R, B/V, TH->S/Z, F/H substitution rules
-- ``levenshtein_search``   -- plain English-spelling edit-distance search
-- ``spelling_branch``      -- orchestrates the four spelling signals above
+- ``eng_to_katakana``      -- rule-based English->katakana transliteration fallback
+- ``spelling_challenge``   -- orthographic distractors: look-alikes + transliteration
 - ``semantic_branch``      -- masked-LM scoring + FastText cosine tiering
 - ``build_loanword_index`` -- builds pipeline/cache/loanwords.json from JMdict
 

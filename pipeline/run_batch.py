@@ -20,7 +20,7 @@ import sys
 from datetime import datetime, timezone
 from importlib import metadata
 
-from pipeline import spelling_branch
+from pipeline import spelling_challenge
 from pipeline import semantic_branch
 
 OUT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache", "batch_result.json")
@@ -74,11 +74,10 @@ def main():
 
         entry = {"word": word, "pos": pos, "level": level, "sentence": sentence}
 
-        # Spelling branch -- no model, no network, always runs.
+        # Orthographic spelling-challenge distractors -- no model, no network,
+        # no POS/level gate; always runs.
         try:
-            entry["spelling"] = spelling_branch.spelling_distractors(
-                word, target_pos=pos, target_level=level, n=3
-            )
+            entry["spelling"] = spelling_challenge.spelling_challenge_distractors(word, n=8)
         except Exception as e:
             entry["spelling"] = {"error": str(e)}
 

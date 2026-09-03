@@ -33,7 +33,8 @@ server reports ready — that's expected, it only happens once. Then open
   `POST /api/generate`, which is almost exactly the per-word body of
   `pipeline/run_batch.py`'s loop: look up the word's CEFR-J level/POS (or
   use what you typed), locate it in the sentence via
-  `semantic_branch.make_stem()`, then call `spelling_branch.spelling_distractors()`
+  `semantic_branch.make_stem()`, then call
+  `spelling_challenge.spelling_challenge_distractors()`
   and `semantic_branch.semantic_distractors()` and return both results as
   JSON. No new pipeline logic — it calls the same functions `run_batch.py`
   and the Pipeline Trace artifact are built on.

@@ -7,11 +7,10 @@ letter apart in English; katakana doesn't even distinguish them the same
 way "collar/color" does).
 
 Each rule is (from_substring, to_substring). For every occurrence of
-`from_substring` in the target word, we try substituting just that
-occurrence and keep the result only if it's a *different*, real CEFR-J word.
+`from_substring` in the target word, we try substituting just that occurrence
+and yield the result if it differs from the word. The caller (spelling_challenge)
+decides which of these are real words worth keeping.
 """
-from pipeline import cefr_lookup as cefr
-
 RULES = [
     ("l", "r"), ("r", "l"),           # light/right
     ("b", "v"), ("v", "b"),           # best/vest
@@ -43,33 +42,7 @@ def candidates(word):
                 seen.add(cand)
                 yield cand, f"{from_str}->{to_str}"
 
-def find_valid_swaps(word, target_pos=None, target_level=None, allow_adjacent=True):
-    """
-    Phonetic-swap candidates that are also real CEFR-J words matching the
-    target's POS and CEFR level (with the same ±1 fallback as cefr_lookup).
-    """
-    out = []
-    for cand, rule in candidates(word):
-        ok, level, pos = cefr.matches(cand, target_pos=target_pos,
-                                       target_level=target_level,
-                                       allow_adjacent=allow_adjacent)
-        if ok:
-            out.append({"word": cand, "rule": rule, "level": level, "pos": pos})
-    return out
-
 if __name__ == "__main__":
-    tests = [
-        ("light", "adjective", "A1"),
-        ("right", "adjective", "A1"),
-        ("think", "verb", "A1"),
-        ("fat", "adjective", "A1"),
-        ("class", "noun", "A1"),
-        ("glass", "noun", "A1"),
-        ("board", "noun", "A2"),
-    ]
-    for word, pos, level in tests:
-        raw = list(candidates(word))
-        valid = find_valid_swaps(word, target_pos=pos, target_level=level)
-        print(f"\n=== {word} ({pos}, {level}) ===")
-        print(f"  raw candidates: {raw}")
-        print(f"  valid (CEFR-J + POS + level): {valid}")
+    import sys
+    for word in (sys.argv[1:] or ["light", "think", "fat", "glass", "board"]):
+        print(f"  {word:8s} -> {list(candidates(word))}")

@@ -1,7 +1,7 @@
 """
 Diagnostic Distractors -- live web app.
 
-Wraps the existing pipeline (pipeline/spelling_branch.py and
+Wraps the existing pipeline (pipeline/spelling_challenge.py and
 pipeline/semantic_branch.py) behind a small HTTP API so a user can type any
 word + sentence, generate real distractors on demand, review/adjust which
 ones to keep, and export a TSV -- instead of only browsing the 44 precomputed

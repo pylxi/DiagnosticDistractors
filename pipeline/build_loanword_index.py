@@ -82,10 +82,9 @@ def main():
             # A genuine gairaigo (English loanword) is written ONLY in katakana.
             # If an entry also carries a hiragana reading, its katakana form is
             # just a script variant of a NATIVE Japanese word -- e.g. 刷毛 "hake"
-            # (brush), read はけ/ハケ -- which must NOT be treated as a loanword.
-            # Otherwise near_katakana_neighbors keys off that native reading (a
-            # short string like "hake") and pulls in a flood of unrelated native
-            # vocabulary (gake=cliff, take=bamboo, hane, ...) as fake neighbors.
+            # (brush), read はけ/ハケ -- which must NOT be treated as a loanword,
+            # or "brush" would resolve to the native reading "hake" instead of
+            # its real gairaigo ブラシ.
             if not readings or not all(is_katakana(r) for r in readings):
                 entry.clear()
                 continue
