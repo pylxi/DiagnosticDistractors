@@ -27,6 +27,7 @@ import os
 import Levenshtein
 import pykakasi
 
+from pipeline import cefr_lookup as cefr
 from pipeline import gairaigo
 from pipeline import eng_to_katakana
 from pipeline import phonetic_swaps
@@ -138,6 +139,10 @@ def spelling_challenge_distractors(word, n=8, max_dist=2):
             "word": cand,
             "is_real_word": info["is_real_word"],
             "katakana": info["katakana"],
+            # Informational labels for the reviewer -- NOT filters. The
+            # orthographic branch keeps a candidate whatever its POS/level (or
+            # whether it's a real word); these just say what it is.
+            "cefr": [{"pos": p, "level": l} for p, l in cefr.entries(cand)],
             "source": by_score[0],
             "sources": by_score,
             "score": round(combined, 3),
@@ -158,6 +163,10 @@ if __name__ == "__main__":
         out = spelling_challenge_distractors(w, n=8)
         print(f"\n=== {w} ===")
         for d in out["distractors"]:
-            tag = "" if d["is_real_word"] else "  [non-word]"
-            kata = f" ({d['katakana']})" if d["katakana"] else ""
-            print(f"  {d['word']:12s} {d['score']:.2f}  {' + '.join(d['sources'])}{kata}{tag}")
+            if not d["is_real_word"]:
+                label = f"[non-word{' ' + d['katakana'] if d['katakana'] else ''}]"
+            elif d["cefr"]:
+                label = "CEFR-J: " + ", ".join(f"{e['pos']}/{e['level']}" for e in d["cefr"])
+            else:
+                label = "[real word, not in CEFR-J]"
+            print(f"  {d['word']:12s} {d['score']:.2f}  {' + '.join(d['sources']):22s} {label}")
