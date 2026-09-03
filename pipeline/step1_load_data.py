@@ -58,8 +58,12 @@ def load_jmdict_sample(max_entries=5):
     path = os.path.join(ROOT, "data", "edict", "JMdict_e.xml.gz")
     entries = []
     with gzip.open(path, "rb") as f:
+        # JMdict genuinely uses its internal DTD entities (e.g. <misc>&rare;</misc>,
+        # POS tags), so load_dtd/resolve_entities must stay on. Harden instead by
+        # forbidding network entity resolution and keeping libxml2's built-in
+        # resource limits (no huge_tree) against entity-expansion blow-ups.
         context = etree.iterparse(f, events=("end",), tag="entry",
-                                   load_dtd=True, resolve_entities=True, huge_tree=True)
+                                   load_dtd=True, resolve_entities=True, no_network=True)
         for _, entry in context:
             kanji = [k.text for k in entry.findall("k_ele/keb")]
             readings = [r.text for r in entry.findall("r_ele/reb")]

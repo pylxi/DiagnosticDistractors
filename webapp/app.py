@@ -18,29 +18,39 @@ Run from the repo root:
 Then open http://127.0.0.1:8000/
 """
 import os
+import threading
+from contextlib import asynccontextmanager
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from pipeline import cefr_lookup as cefr
 from pipeline import spelling_branch
 from pipeline import semantic_branch
 
-app = FastAPI(title="Diagnostic Distractors")
-
 _MODEL_NAME = "roberta-large"
 
+# Input caps and a concurrency limit so an accidentally-exposed instance can't be
+# driven into unbounded model inference (each request runs the whole pipeline).
+_MAX_WORD_LEN = 64
+_MAX_SENTENCE_LEN = 500
+_MAX_CONCURRENT_GENERATIONS = 2
+_inference_slots = threading.BoundedSemaphore(_MAX_CONCURRENT_GENERATIONS)
 
-@app.on_event("startup")
-def preload_model():
-    # Loads the model once when the server boots instead of on the first
-    # request a real user makes -- otherwise whoever hits Generate first
-    # eats a model-load delay for everyone after them.
+
+@asynccontextmanager
+async def lifespan(app):
+    # Load the model once when the server boots instead of on the first request
+    # a real user makes -- otherwise whoever hits Generate first eats the delay.
     print(f"Loading {_MODEL_NAME} (first boot may take a while)...", flush=True)
     semantic_branch._get_model_and_tokenizer(_MODEL_NAME)
     print("Model loaded. Ready.", flush=True)
+    yield
+
+
+app = FastAPI(title="Diagnostic Distractors", lifespan=lifespan)
 
 
 @app.get("/api/health")
@@ -65,10 +75,10 @@ def lookup(word: str):
 
 
 class GenerateRequest(BaseModel):
-    word: str
-    sentence: str
-    pos: Optional[str] = None
-    level: Optional[str] = None
+    word: str = Field(..., min_length=1, max_length=_MAX_WORD_LEN)
+    sentence: str = Field(..., min_length=1, max_length=_MAX_SENTENCE_LEN)
+    pos: Optional[str] = Field(None, max_length=32)
+    level: Optional[str] = Field(None, max_length=8)
 
 
 def _resolve_cefr_entry(word, entries, req_pos, req_level):
@@ -144,21 +154,30 @@ def generate(req: GenerateRequest):
         "in_cefr_j": True,  # enforced above; kept for the frontend's shape
     }
 
-    try:
-        # n=8 (not the pipeline's default of 3) so the review step in the UI
-        # has more than the bare minimum to choose from.
-        entry["spelling"] = spelling_branch.spelling_distractors(
-            word, target_pos=pos, target_level=level, n=8
+    # Cap concurrent model inference so a burst of requests can't spawn
+    # unbounded parallel forward passes and exhaust memory/CPU.
+    if not _inference_slots.acquire(blocking=False):
+        raise HTTPException(
+            503, "Server busy generating other distractors — try again in a moment."
         )
-    except Exception as e:
-        entry["spelling"] = {"error": str(e)}
+    try:
+        try:
+            # n=8 (not the pipeline's default of 3) so the review step in the UI
+            # has more than the bare minimum to choose from.
+            entry["spelling"] = spelling_branch.spelling_distractors(
+                word, target_pos=pos, target_level=level, n=8
+            )
+        except Exception as e:
+            entry["spelling"] = {"error": str(e)}
 
-    try:
-        entry["semantic"] = semantic_branch.semantic_distractors(
-            stem, word, target_pos=pos, target_level=level
-        )
-    except Exception as e:
-        entry["semantic"] = {"error": str(e)}
+        try:
+            entry["semantic"] = semantic_branch.semantic_distractors(
+                stem, word, target_pos=pos, target_level=level
+            )
+        except Exception as e:
+            entry["semantic"] = {"error": str(e)}
+    finally:
+        _inference_slots.release()
 
     return entry
 

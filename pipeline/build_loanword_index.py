@@ -69,8 +69,12 @@ def main():
     n_katakana_entries = 0
 
     with gzip.open(JMDICT_PATH, "rb") as f:
+        # JMdict genuinely uses its internal DTD entities (we read <misc>&rare;</misc>
+        # etc.), so load_dtd/resolve_entities must stay on. Harden instead by
+        # forbidding network entity resolution and keeping libxml2's built-in
+        # resource limits (no huge_tree) against entity-expansion blow-ups.
         context = etree.iterparse(f, events=("end",), tag="entry",
-                                   load_dtd=True, resolve_entities=True, huge_tree=True)
+                                   load_dtd=True, resolve_entities=True, no_network=True)
         for _, entry in context:
             n_entries += 1
             ent_seq = entry.findtext("ent_seq")
